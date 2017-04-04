@@ -34,4 +34,25 @@ public class TEAEncryption
 		
 		return str;
 	}
+
+	public long[] byteArrToLongArr(byte[] bytes)
+	{
+		long[] l = new long[bytes.length];
+		
+		for(int i=0; i<bytes.length;i++){
+			l[i] = bytes[i];
+ 		}
+		
+		return l;
+	}
+
+	public byte[] LongArrToByteArr(long[] lArr)
+	{
+		byte[] b = new byte[lArr.length];
+		
+		for(int i=0;i<lArr.length;i++)
+ 			b[i] += lArr[i];
+		
+		return b;
+	}
 }

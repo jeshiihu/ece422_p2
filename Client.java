@@ -6,6 +6,8 @@ import javax.crypto.*;
 
 public class Client {
 	public static void main(String[] args) {
+		System.loadLibrary("tea");
+
 		TEAEncryption tea = new TEAEncryption();
 
 		String val = "cello";
@@ -21,6 +23,15 @@ public class Client {
 		{
 			KeyGenerator keyGen = KeyGenerator.getInstance("AES");
 			key = keyGen.generateKey();
+			System.out.println("key bytes: " + key.getEncoded().toString());
+			long[] longKey = tea.byteArrToLongArr(key.getEncoded());
+			System.out.println("key long: " + longKey.toString());
+			byte[] ne = tea.LongArrToByteArr(longKey);
+			System.out.println("new long: " + ne.toString());
+
+
+
+			tea.encrypt(lval, longKey);
 		}
 		catch(Exception e)
 		{
