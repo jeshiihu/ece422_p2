@@ -9,20 +9,20 @@ public class FileIo
 {
 	public FileIo() {}
 
-	public boolean ValidTxtFile(String fname)
+	public boolean validTxtFile(String fname)
 	{
 		// check if file matches .txt format
 		String p = "(.+)(\\.txt)";
-		boolean validTxt = Pattern.matches(p, fname);
-
-		// check if file exists
-		File f = new File(fname);
-		boolean exists = f.exists() && !f.isDirectory();
-
-		return validTxt && exists;
+		return Pattern.matches(p, fname);		
 	}
 
-	public boolean CreateOutputFile(String fname)
+	public boolean fileExists(String fname)
+	{
+		File f = new File(fname);
+		return f.exists() && !f.isDirectory();
+	}
+
+	public boolean createOutputFile(String fname)
 	{
 		File f = new File(fname);
 		try 
@@ -41,5 +41,19 @@ public class FileIo
 		}
 
 		return true;
+	}
+
+	public void addNewLine(String fname, String line)
+	{
+		try
+		{ // true in 2nd param of file writer is to append 
+			Writer fout = new BufferedWriter(new FileWriter(fname, true));
+			fout.append(line + "\n");
+			fout.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 }
