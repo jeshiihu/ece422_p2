@@ -11,14 +11,13 @@ all: linux
 
 linux: common
 	@echo '----- Compiling code for Linux -----'
-#	$(CC) $(INCLUDE) $(INCLUDE)linux -shared -fpic -o libinsertionsort.so lib_insertionsort.c
+	$(CC) $(INCLUDE) $(INCLUDE)linux/ -shared -fpic -o libtea.so lib_tea.c
 
 mac: common
 	@echo '----- Compiling code for Mac -----'
 	$(CC) $(INCLUDE) $(INCLUDE)darwin/ -dynamiclib -o libtea.jnilib lib_tea.c
 
 common:
-	@echo
 	javac *.java
 	javah TEAEncryption
 
