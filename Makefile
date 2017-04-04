@@ -15,13 +15,13 @@ linux: common
 
 mac: common
 	@echo '----- Compiling code for Mac -----'
-#	$(CC) $(INCLUDE)include/ $(INCLUDE)darwin/ -dynamiclib -o libinsertionsort.jnilib lib_insertionsort.c
+	$(CC) $(INCLUDE) $(INCLUDE)darwin/ -dynamiclib -o libtea.jnilib lib_tea.c
 
 common:
-	@echo '----- common -----'
-	
+	@echo
 	javac *.java
-#	javah SecondaryInsertionSort
+	javah TEAEncryption
+
 clean:
 	-rm -f *.o *.so *.jnilib *.class linux mac
 
