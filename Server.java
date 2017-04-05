@@ -5,7 +5,6 @@
  * http://introcs.cs.princeton.edu/java/84network/EchoServer.java.html
  */
 import java.net.*;
-import java.io.*;
 
 public class Server
 {
@@ -31,20 +30,8 @@ public class Server
            	Socket clientSock = sock.accept();
             clientPort = clientSock.getPort();
             System.err.println("Accepted connection from client " + Integer.toString(clientPort));
-
-			PrintWriter out = new PrintWriter(clientSock.getOutputStream(), true);
-    		BufferedReader in = new BufferedReader(new InputStreamReader(clientSock.getInputStream()));
-    		BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-
-			String userInput;
-			while ((userInput = stdIn.readLine()) != null) 
-			{
-    			out.println(userInput);
-	    		System.out.println("echo: " + in.readLine());
-			}
-
-           	System.err.println("Closing connection with client " + Integer.toString(clientPort));
-			clientSock.close();
+            CommThread comm = new CommThread(sock, clientSock);
+            comm.start();
 		}
 	}
 

@@ -23,16 +23,29 @@ public class Client {
 
 		System.out.println("Client successfully connected!");
 
-		PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-    	BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-    	BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+    	BufferedReader clientInput = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+    	DataOutputStream clientOutput = new DataOutputStream(sock.getOutputStream());
 
-		String userInput;
-		while ((userInput = stdIn.readLine()) != null) 
+    	String fromCurrClient;
+		while((fromCurrClient = inFromUser.readLine()) != null || !sock.isConnected())
 		{
-    		out.println(userInput);
-	    	System.out.println("echo: " + in.readLine());
+			// send to the server what client wrote to the terminal
+			clientOutput.writeBytes(fromCurrClient + "\n");
+			clientOutput.flush();
+
+			System.out.println("MY input: " + fromCurrClient);
+			
+			if(fromCurrClient.equalsIgnoreCase("finish"))
+			{
+				System.out.println("Closing the connection with the server");
+				sock.close();
+				return;
+			}
 		}
+
+		System.out.println("Client closed by quitting");
+		sock.close();
 
 		// TEAEncryption tea = new TEAEncryption();
 
