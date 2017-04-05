@@ -26,14 +26,25 @@ public class Client {
 		System.out.println("TESTING SHIT");
 		TEAEncryption tea = new TEAEncryption();
 		String str = "encode me";
-		int[] edc = tea.strToIntArr(str);
-		int[] key = {1,1,1,5,1,2,1,1,12,4,5,23,5,2,2,2,4,2,1};
-		System.out.println("int to str: " + tea.intArrToStr(edc));
 		
-		tea.encrypt(edc, key);
-		System.out.println("tea encrypt: " + tea.intArrToStr(edc));
-		tea.decrypt(edc, key);
-		System.out.println("tea decrypt: " + tea.intArrToStr(edc));
+		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+		SecretKey key = keyGen.generateKey();
+
+		String getback = new String(str.getBytes());
+		System.out.println("int to str: " + getback);
+		
+
+		byte[] strBytes = str.getBytes();
+		long[] strLong = tea.byteArrToLongArr(str.getBytes());
+		tea.encrypt(strLong, tea.byteArrToLongArr(key.getEncoded()));
+		System.out.println("tea encrypt: " + new String(strBytes));
+		for(long l: strLong)
+			System.out.println(Long.toString(l));
+
+		tea.decrypt(strLong, tea.byteArrToLongArr(key.getEncoded()));
+		System.out.println("tea decrypt: " + new String(strBytes));
+		for(long l: strLong)
+			System.out.println(Long.toString(l));
 
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
     	BufferedReader clientInput = new BufferedReader(new InputStreamReader(sock.getInputStream()));

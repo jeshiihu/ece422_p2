@@ -10,18 +10,18 @@ extern "C" {
 /*
  * Class:     TEAEncryption
  * Method:    encrypt
- * Signature: ([I[I)V
+ * Signature: ([J[J)V
  */
 JNIEXPORT void JNICALL Java_TEAEncryption_encrypt
-  (JNIEnv *, jobject, jintArray, jintArray);
+  (JNIEnv *, jobject, jlongArray, jlongArray);
 
 /*
  * Class:     TEAEncryption
  * Method:    decrypt
- * Signature: ([I[I)V
+ * Signature: ([J[J)V
  */
 JNIEXPORT void JNICALL Java_TEAEncryption_decrypt
-  (JNIEnv *, jobject, jintArray, jintArray);
+  (JNIEnv *, jobject, jlongArray, jlongArray);
 
 #ifdef __cplusplus
 }

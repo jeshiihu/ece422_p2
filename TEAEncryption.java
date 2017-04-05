@@ -10,37 +10,39 @@ public class TEAEncryption
 {	
 	public TEAEncryption() {}
 
-	public native void encrypt(int[] v, int[] k);
-	public native void decrypt(int[] v, int[] k);
+	public native void encrypt(long[] v, long[] k);
+	public native void decrypt(long[] v, long[] k);
 
-	public int[] strToIntArr(String str)
-	{
-		char [] chArr = str.toCharArray();
-		int[] intArr = new int[chArr.length];
+	// public int[] strToIntArr(String str)
+	// {
+	// 	char [] chArr = str.toCharArray();
+	// 	int[] intArr = new int[chArr.length];
 		
-		for(int i=0; i<chArr.length;i++){
-			intArr[i] = chArr[i];
- 		}
+	// 	for(int i=0; i<chArr.length;i++){
+	// 		intArr[i] = chArr[i];
+ // 		}
 		
-		return intArr;
-	}
+	// 	return intArr;
+	// }
 
-	public String intArrToStr(int[] lArr)
-	{
-		String str = "";
+	// public String intArrToStr(int[] lArr)
+	// {
+	// 	String str = "";
 		
-		for(int l : lArr)
- 			str += (char)l;
+	// 	for(int l : lArr)
+ // 			str += (char)l;
 		
-		return str;
-	}
+	// 	return str;
+	// }
 
 	public long[] byteArrToLongArr(byte[] bytes)
 	{
 		long[] l = new long[bytes.length];
 		
-		for(int i=0; i<bytes.length;i++){
-			l[i] = bytes[i];
+		for(int i=0; i<bytes.length;i++)
+		{
+			Byte currByte = bytes[i];
+			l[i] = currByte.longValue();
  		}
 		
 		return l;
@@ -51,7 +53,10 @@ public class TEAEncryption
 		byte[] b = new byte[lArr.length];
 		
 		for(int i=0;i<lArr.length;i++)
- 			b[i] += lArr[i];
+		{
+			Long currLong = lArr[i];
+ 			b[i] = currLong.byteValue();
+		}
 		
 		return b;
 	}
