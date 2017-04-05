@@ -10,26 +10,26 @@ public class TEAEncryption
 {	
 	public TEAEncryption() {}
 
-	public native void encrypt(long[] v, long[] k);
-	public native void decrypt(long[] v, long[] k);
+	public native void encrypt(int[] v, int[] k);
+	public native void decrypt(int[] v, int[] k);
 
-	public long[] strToLongArr(String str)
+	public int[] strToIntArr(String str)
 	{
 		char [] chArr = str.toCharArray();
-		long[] longStr = new long[chArr.length];
+		int[] intArr = new int[chArr.length];
 		
 		for(int i=0; i<chArr.length;i++){
-			longStr[i] = chArr[i];
+			intArr[i] = chArr[i];
  		}
 		
-		return longStr;
+		return intArr;
 	}
 
-	public String longArrToStr(long[] lArr)
+	public String intArrToStr(int[] lArr)
 	{
 		String str = "";
 		
-		for(long l : lArr)
+		for(int l : lArr)
  			str += (char)l;
 		
 		return str;

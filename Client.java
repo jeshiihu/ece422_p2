@@ -11,7 +11,7 @@ public class Client {
 
 	public static void main(String[] args) throws Exception
 	{
-		// System.loadLibrary("tea");
+		System.loadLibrary("tea");
 		
 		Socket sock = startConnection();
 		if(sock == null)
@@ -23,12 +23,24 @@ public class Client {
 
 		System.out.println("Client successfully connected!");
 
+		System.out.println("TESTING SHIT");
+		TEAEncryption tea = new TEAEncryption();
+		String str = "encode me";
+		int[] edc = tea.strToIntArr(str);
+		int[] key = {1,1,1,5,1,2,1,1,12,4,5,23,5,2,2,2,4,2,1};
+		System.out.println("int to str: " + tea.intArrToStr(edc));
+		
+		tea.encrypt(edc, key);
+		System.out.println("tea encrypt: " + tea.intArrToStr(edc));
+		tea.decrypt(edc, key);
+		System.out.println("tea decrypt: " + tea.intArrToStr(edc));
+
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
     	BufferedReader clientInput = new BufferedReader(new InputStreamReader(sock.getInputStream()));
     	DataOutputStream clientOutput = new DataOutputStream(sock.getOutputStream());
 
     	String fromCurrClient;
-		while((fromCurrClient = inFromUser.readLine()) != null || !sock.isConnected())
+		while((fromCurrClient = inFromUser.readLine()) != null)
 		{
 			// send to the server what client wrote to the terminal
 			clientOutput.writeBytes(fromCurrClient + "\n");
