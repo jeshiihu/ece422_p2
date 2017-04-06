@@ -10,6 +10,8 @@ import javax.crypto.*;
 public class Client {
 	static private String hostname = "127.0.0.1";
 	static private int port = 16000;
+	static private long[] sharedKeyLong;
+	static private TEAEncryption tea = new TEAEncryption();
 
 	public static void main(String[] args) throws Exception
 	{
@@ -22,19 +24,28 @@ public class Client {
 				Integer.toString(port) + " and host " + hostname);
 			return;
 		}
-
 		System.out.println("Client successfully connected!");
+		
+    	SecretKey sharedKey = negotiateKey(sock.getInputStream(), sock.getOutputStream());
+		sharedKeyLong = tea.byteArrToLongArr(sharedKey.getEncoded());
+
+    	if(!validateLogin(sock))
+    	{
+    		System.out.println("Invalid login, closing connection");
+			sock.close();
+			return;
+		}
 
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
     	DataOutputStream clientOutput = new DataOutputStream(sock.getOutputStream());
-
-    	SecretKey sharedKey = negotiateKey(sock.getInputStream(), sock.getOutputStream());
-    	System.out.println(new String(sharedKey.getEncoded()));
 
     	String fromCurrClient;
 		while((fromCurrClient = inFromUser.readLine()) != null)
 		{
 			// send to the server what client wrote to the terminal
+			fromCurrClient += "\n";
+
+
 			clientOutput.writeBytes(fromCurrClient + "\n");
 			clientOutput.flush();
 
@@ -84,16 +95,12 @@ public class Client {
 		ObjectOutputStream outObj = new ObjectOutputStream(outStream);
 		outObj.writeObject(size);
 		outObj.flush();
-		System.out.println("send size");
-
 		outObj.writeObject(pg);
 		outObj.flush();
 
 		// send public key
 		DHCrypt dh = new DHCrypt(pg[0],pg[1],size);
 		PublicKey pubKey = dh.getPublic();
-		if(pubKey == null)
-			throw new Exception("i shad");
 
     	DataOutputStream out = new DataOutputStream(outStream);
 		byte[] pubKeyBytes = pubKey.getEncoded();
@@ -111,8 +118,30 @@ public class Client {
 		// generate the shared key		
 		dh.setOtherKey(servKey);
 		dh.generateSharedSecret();
-
+		
 		return dh.getShared();
+	}
+
+	private static boolean validateLogin(Socket sock) throws Exception
+	{
+		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+		DataInputStream in = new DataInputStream(sock.getInputStream());
+		
+		int len = in.readInt();
+		if(len <= 0)
+			throw new Exception("Unable to get length of bytes");
+		byte[] fromServer = new byte[len];
+		in.readFully(fromServer,0,len);
+
+		long[] fromServLong = tea.byteArrToLongArr(fromServer);
+		tea.decrypt(fromServLong, sharedKeyLong);
+		fromServer = tea.longArrToByteArr(fromServLong);
+
+		System.out.println("Server: " + new String(fromServer));
+				
+		// if(fromServer.equalsIgnoreCase("finish"))
+			// shutDown(port + " has closed its connection", sock);
+		return false;
 	}
 }
 

@@ -13,28 +13,6 @@ public class TEAEncryption
 	public native void encrypt(long[] v, long[] k);
 	public native void decrypt(long[] v, long[] k);
 
-	// public int[] strToIntArr(String str)
-	// {
-	// 	char [] chArr = str.toCharArray();
-	// 	int[] intArr = new int[chArr.length];
-		
-	// 	for(int i=0; i<chArr.length;i++){
-	// 		intArr[i] = chArr[i];
- // 		}
-		
-	// 	return intArr;
-	// }
-
-	// public String intArrToStr(int[] lArr)
-	// {
-	// 	String str = "";
-		
-	// 	for(int l : lArr)
- // 			str += (char)l;
-		
-	// 	return str;
-	// }
-
 	public long[] byteArrToLongArr(byte[] bytes)
 	{
 		long[] l = new long[bytes.length];
@@ -48,7 +26,7 @@ public class TEAEncryption
 		return l;
 	}
 
-	public byte[] LongArrToByteArr(long[] lArr)
+	public byte[] longArrToByteArr(long[] lArr)
 	{
 		byte[] b = new byte[lArr.length];
 		

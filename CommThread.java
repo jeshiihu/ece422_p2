@@ -16,6 +16,8 @@ public class CommThread extends Thread
 	private ServerSocket serverSock;
 	private Socket clientSock;
 	private String port;
+	static private long[] sharedKeyLong;
+	static private TEAEncryption tea = new TEAEncryption();
 
 	public CommThread(ServerSocket sSock, Socket cSock)
 	{
@@ -26,6 +28,8 @@ public class CommThread extends Thread
 
 	public void run()
 	{
+		System.loadLibrary("tea");
+
 		try
 		{
     		DataInputStream clientInput = new DataInputStream(clientSock.getInputStream());
@@ -33,8 +37,13 @@ public class CommThread extends Thread
     		DataOutputStream clientOutput = new DataOutputStream(clientSock.getOutputStream());
 
     		SecretKey sharedKey = negotiateKey(clientSock.getInputStream(), clientSock.getOutputStream());
-    		System.out.println(new String(sharedKey.getEncoded()));
+			sharedKeyLong = tea.byteArrToLongArr(sharedKey.getEncoded());
 
+    		if(!validateLogin(clientSock))
+    		{
+    			System.out.println("Client " + port + " login failed");
+				return;
+    		}
 
 			String fromConnectedClient;
 			while((fromConnectedClient = in.readLine()) != null)
@@ -84,6 +93,31 @@ public class CommThread extends Thread
 		dh.generateSharedSecret();
 
 		return dh.getShared();
+	}
+
+	private static boolean validateLogin(Socket sock) throws Exception
+	{
+		DataOutputStream out = new DataOutputStream(sock.getOutputStream());
+		
+		String prompt = "Please enter your username";
+		byte[] promptBytes = prompt.getBytes();
+		
+		long[] promptLong = tea.byteArrToLongArr(promptBytes);
+		tea.encrypt(promptLong, sharedKeyLong);
+		promptBytes = tea.longArrToByteArr(promptLong);
+
+		out.writeInt(promptBytes.length);
+		out.write(promptBytes);
+
+		long[] fromServLong = tea.byteArrToLongArr(promptBytes);
+		tea.decrypt(fromServLong, sharedKeyLong);
+		promptBytes = tea.longArrToByteArr(fromServLong);
+		System.out.println("Server: " + new String(promptBytes));
+		// System.out.println(port + ": " + new String(fromServer));
+				
+		// if(fromServer.equalsIgnoreCase("finish"))
+			// shutDown(port + " has closed its connection", sock);
+		return false;
 	}
 
 	private void shutDown(String msg, Socket sock)

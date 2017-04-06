@@ -46,6 +46,7 @@ public class DHCrypt
     	ka.init(privKey);
     	ka.doPhase(otherPubKey, true);
     	sharedSecret = ka.generateSecret("AES");
+		System.out.println("Generated shared key successfully!\n");
 	}
 
 	public PrivateKey getPrivate()
