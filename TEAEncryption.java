@@ -42,15 +42,17 @@ public class TEAEncryption
 		{
 			int diff = mult8 - bytesLen;
 			for(int i = 0; i<mult8;i++)
-			{
-				if(i <=diff)
+			{	// pad 0s at the end!
+				if(i >= bytesLen)
 					paddedBytes[i] = (byte)0;
 				else
-					paddedBytes[i] = bytes[i-diff];
+					paddedBytes[i] = bytes[i];
 			}
 		}
 		else
 			paddedBytes = bytes;
+
+		System.out.println(new String(paddedBytes));
 
 		int longLen = (int)Math.ceil(paddedBytes.length/8);
 		long[] l = new long[longLen];
