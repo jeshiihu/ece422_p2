@@ -8,8 +8,8 @@
 import java.net.*;
 import java.io.*;
 import java.security.*;
-import java.security.spec.*;
 import javax.crypto.*;
+import java.math.BigInteger;
 
 public class CommThread extends Thread 
 {
@@ -28,13 +28,16 @@ public class CommThread extends Thread
 	{
 		try
 		{
-    		BufferedReader clientInput = new BufferedReader(new InputStreamReader(clientSock.getInputStream()));
+    		DataInputStream clientInput = new DataInputStream(clientSock.getInputStream());
+    		BufferedReader in = new BufferedReader(new InputStreamReader(clientSock.getInputStream()));
     		DataOutputStream clientOutput = new DataOutputStream(clientSock.getOutputStream());
 
-    		negotiateKey(clientInput, clientOutput);
+    		SecretKey sharedKey = negotiateKey(clientSock.getInputStream(), clientSock.getOutputStream());
+    		System.out.println(new String(sharedKey.getEncoded()));
+
 
 			String fromConnectedClient;
-			while((fromConnectedClient = clientInput.readLine()) != null)
+			while((fromConnectedClient = in.readLine()) != null)
 			{
 				System.out.println(port + ": " + fromConnectedClient);
 				if(fromConnectedClient.equalsIgnoreCase("finish"))
@@ -50,36 +53,37 @@ public class CommThread extends Thread
 		}
 	}
 
-	private void negotiateKey(BufferedReader in, DataOutputStream out) throws Exception
+	private SecretKey negotiateKey(InputStream inStream, OutputStream outStream) throws Exception
 	{
-		// create a secret key and a public key to send over to the server
-		KeyGenerator gen = KeyGenerator.getInstance("AES");
-		SecretKey sPrivKey = gen.generateKey();
-		SecretKey sPubKey = gen.generateKey();
+		ObjectInputStream inObj = new ObjectInputStream(inStream);
 
+		// get the p and g prime parameters
+		int size = (int)inObj.readObject();
+		BigInteger[] pg = (BigInteger[])inObj.readObject();
+		
 		// receive client's public key
-		String cPubKeyStr = in.readLine();
-		if(cPubKeyStr == null)
-			throw new Exception("received null public key");
+		DataInputStream in = new DataInputStream(inStream);
+		int len = in.readInt();
+		if(len <= 0)
+			throw new Exception("Failed to get Server's key");
 
-		System.out.println("client's: " + cPubKeyStr);
-		// // convert to key object!
-		// X509EncodedKeySpec dhSpec = new X509EncodedKeySpec(cPubKeyStr.getBytes());
-		// KeyFactory factory = KeyFactory.getInstance("DH");
-		// PublicKey cPubKey = factory.generatePublic(dhSpec);
+		byte[] cliKey = new byte[len];
+		in.readFully(cliKey, 0, len);
 
-		// send server's public key
-		byte[] sPubKeyBytes = sPubKey.getEncoded();
-		System.out.println("my: " + new String(sPubKeyBytes));
-		out.writeBytes(new String(sPubKeyBytes) + "\n");
+		// send public key
+		DHCrypt dh = new DHCrypt(pg[0],pg[1],size);
+		PublicKey pubKey = dh.getPublic();
 
-		// // do the agreement of shared key!
-		// KeyAgreement agree = KeyAgreement.getInstance("DH");
-		// agree.init(sPrivKey);
-		// agree.doPhase(cPubKey, true);
+    	DataOutputStream out = new DataOutputStream(outStream);
+		byte[] pubKeyBytes = pubKey.getEncoded();
+		out.writeInt(pubKeyBytes.length);
+		out.write(pubKeyBytes);
+		
+		// generate the shared key		
+		dh.setOtherKey(cliKey);
+		dh.generateSharedSecret();
 
-		// SecretKey sharedKey = agree.generateSecret("AES");
-		// System.out.println("shared: " + new String(sharedKey.getEncoded()));
+		return dh.getShared();
 	}
 
 	private void shutDown(String msg, Socket sock)
