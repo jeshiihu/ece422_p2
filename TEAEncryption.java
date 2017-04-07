@@ -11,9 +11,27 @@ import java.lang.Math;
 public class TEAEncryption
 {	
 	public TEAEncryption() {}
+	
+	public byte[] teaEncrypt(byte[] data, byte[] key)
+	{
+		long[] lData = byteArrToLongArr(data);
+		long[] lKey = byteArrToLongArr(key);
+		encrypt(lData, lKey);
 
-	public native void encrypt(long[] v, long[] k);
-	public native void decrypt(long[] v, long[] k);
+		return longArrToByteArr(lData);
+	}
+
+	public byte[] teaDecrypt(byte[] data, byte[] key)
+	{
+		long[] lData = byteArrToLongArr(data);
+		long[] lKey = byteArrToLongArr(key);
+		decrypt(lData, lKey);
+
+		return longArrToByteArr(lData);
+	}
+
+	private native void encrypt(long[] v, long[] k);
+	private native void decrypt(long[] v, long[] k);
 
 	// http://stackoverflow.com/questions/9303604/rounding-up-a-number-to-nearest-multiple-of-5
 	private int roundUpClosestMult8(int num) 
@@ -25,17 +43,14 @@ public class TEAEncryption
     	return nearest;
 	}
 
-	public long[] byteArrToLongArr(byte[] bytes)
+	private long[] byteArrToLongArr(byte[] bytes)
 	{
 		// use bytebuffer and pad!
 		// http://stackoverflow.com/questions/4485128/how-do-i-convert-long-to-byte-and-back-in-java
-		int bytesLen = bytes.length;
-		System.out.println("sizeBytes: " + Integer.toString(bytes.length));
-
 		// long is 64 bits, therefore 8 bytes
 		// ensure that the length of bytes is a multiple of 8
+		int bytesLen = bytes.length;
 		int mult8 = roundUpClosestMult8(bytesLen);
-		System.out.println("near:" + Integer.toString(mult8));
 
 		byte[] paddedBytes = new byte[mult8];
 		if(mult8 != bytesLen) // not a multiple
@@ -52,14 +67,9 @@ public class TEAEncryption
 		else
 			paddedBytes = bytes;
 
-		System.out.println(new String(paddedBytes));
-
 		int longLen = (int)Math.ceil(paddedBytes.length/8);
 		long[] l = new long[longLen];
 		int ind = 0;
-
-		// System.out.println("sizeBuff: " + Integer.toString(bufLen));
-		System.out.println("sizeLong: " + Integer.toString(longLen));
 
 		for(int i = 0; i< paddedBytes.length; i+=8)
 		{
@@ -73,28 +83,11 @@ public class TEAEncryption
 			l[ind] = buf.getLong();
 			ind++;
 		}
-		// {
-		// 	// if(buf.remaining() < 8) // pad it
-		// 	// {
 
-		// 	// }
-
-		// 	l[i] = buf.getLong();
-		// 	i++;
-		// }
-
-		// long[] l = new long[bytes.length];
-		
-		// for(int i=0; i<bytes.length;i++)
-		// {
-		// 	Byte currByte = bytes[i];
-		// 	l[i] = currByte.longValue();
- 	// 	}
-		
 		return l;
 	}
 
-	public byte[] longArrToByteArr(long[] lArr)
+	private byte[] longArrToByteArr(long[] lArr)
 	{
 		byte[] b = new byte[lArr.length*8];
 		
@@ -104,14 +97,11 @@ public class TEAEncryption
     		buffer.putLong(lArr[i]);
     		byte[] eightBytes = buffer.array();
     		int ind = 0;
-			//0-7,8-15,16:
 			for(int j=i*8;j<(i*8)+8;j++)
 			{
 				b[j] = eightBytes[ind];
 				ind++;
 			}
-			// Long currLong = lArr[i];
- 			// b[i] = currLong.byteValue();
 		}
 		
 		return b;

@@ -10,8 +10,9 @@ import javax.crypto.*;
 public class Client {
 	static private String hostname = "127.0.0.1";
 	static private int port = 16000;
-	static private long[] sharedKeyLong;
+	static private SecretKey sharedKey;
 	static private TEAEncryption tea = new TEAEncryption();
+	static private CommStream commStream;
 
 	public static void main(String[] args) throws Exception
 	{
@@ -25,11 +26,11 @@ public class Client {
 			return;
 		}
 		System.out.println("Client successfully connected!");
-		
-    	SecretKey sharedKey = negotiateKey(sock.getInputStream(), sock.getOutputStream());
-		sharedKeyLong = tea.byteArrToLongArr(sharedKey.getEncoded());
+		commStream = new CommStream(sock);
 
-    	if(!validateLogin(sock))
+    	sharedKey = negotiateKey(sock.getInputStream(), sock.getOutputStream());
+
+    	if(!validateLogin())
     	{
     		System.out.println("Invalid login, closing connection");
 			sock.close();
@@ -122,25 +123,20 @@ public class Client {
 		return dh.getShared();
 	}
 
-	private static boolean validateLogin(Socket sock) throws Exception
+	private static boolean validateLogin() throws Exception
 	{
-		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-		DataInputStream in = new DataInputStream(sock.getInputStream());
-		
-		int len = in.readInt();
-		if(len <= 0)
-			throw new Exception("Unable to get length of bytes");
-		byte[] fromServer = new byte[len];
-		in.readFully(fromServer,0,len);
-
-		long[] fromServLong = tea.byteArrToLongArr(fromServer);
-		tea.decrypt(fromServLong, sharedKeyLong);
-		fromServer = tea.longArrToByteArr(fromServLong);
-
+		byte[] fromServer = commStream.receiveBytes();
+		fromServer = tea.teaDecrypt(fromServer, sharedKey.getEncoded());
 		System.out.println("Server: " + new String(fromServer));
-				
-		// if(fromServer.equalsIgnoreCase("finish"))
-			// shutDown(port + " has closed its connection", sock);
+
+		byte[] user = commStream.getUserInput();
+		// user = tea.teaEncrypt(user, sharedKey.getEncoded());
+		commStream.sendBytes(user);
+
+		fromServer = commStream.receiveBytes();
+		fromServer = tea.teaDecrypt(fromServer, sharedKey.getEncoded());
+		System.out.println("Server: " + new String(fromServer));
+
 		return false;
 	}
 }

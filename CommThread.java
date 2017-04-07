@@ -15,14 +15,17 @@ public class CommThread extends Thread
 {
 	private ServerSocket serverSock;
 	private Socket clientSock;
-	private String port;
-	static private long[] sharedKeyLong;
+	static private String port;
+	static private CommStream commStream;
+
+	static private SecretKey sharedKey;
 	static private TEAEncryption tea = new TEAEncryption();
 
-	public CommThread(ServerSocket sSock, Socket cSock)
+	public CommThread(ServerSocket sSock, Socket cSock) throws Exception
 	{
 		serverSock = sSock;
 		clientSock = cSock;
+		commStream = new CommStream(cSock);
 		port = "[" + Integer.toString(clientSock.getPort()) + "]";
 	}
 
@@ -32,14 +35,14 @@ public class CommThread extends Thread
 
 		try
 		{
+
     		DataInputStream clientInput = new DataInputStream(clientSock.getInputStream());
     		BufferedReader in = new BufferedReader(new InputStreamReader(clientSock.getInputStream()));
     		DataOutputStream clientOutput = new DataOutputStream(clientSock.getOutputStream());
 
-    		SecretKey sharedKey = negotiateKey(clientSock.getInputStream(), clientSock.getOutputStream());
-			sharedKeyLong = tea.byteArrToLongArr(sharedKey.getEncoded());
+    		sharedKey = negotiateKey(clientSock.getInputStream(), clientSock.getOutputStream());
 
-    		if(!validateLogin(clientSock))
+    		if(!validateLogin())
     		{
     			System.out.println("Client " + port + " login failed");
 				return;
@@ -65,7 +68,7 @@ public class CommThread extends Thread
 	private SecretKey negotiateKey(InputStream inStream, OutputStream outStream) throws Exception
 	{
 		ObjectInputStream inObj = new ObjectInputStream(inStream);
-
+		// commStr÷eam
 		// get the p and g prime parameters
 		int size = (int)inObj.readObject();
 		BigInteger[] pg = (BigInteger[])inObj.readObject();
@@ -95,28 +98,21 @@ public class CommThread extends Thread
 		return dh.getShared();
 	}
 
-	private static boolean validateLogin(Socket sock) throws Exception
+	private static boolean validateLogin() throws Exception
 	{
-		DataOutputStream out = new DataOutputStream(sock.getOutputStream());
-		
 		String prompt = "Please enter your username";
-		byte[] promptBytes = prompt.getBytes();
-		
-		long[] promptLong = tea.byteArrToLongArr(promptBytes);
-		tea.encrypt(promptLong, sharedKeyLong);
-		promptBytes = tea.longArrToByteArr(promptLong);
+		byte[] promptBytes = tea.teaEncrypt(prompt.getBytes(), sharedKey.getEncoded());
+		commStream.sendBytes(promptBytes);
 
-		out.writeInt(promptBytes.length);
-		out.write(promptBytes);
+		// get username
+		byte[] user = commStream.receiveBytes();
+		// user = tea.teaDecrypt(user, sharedKey.getEncoded());
+		System.out.println(port + " username: " + new String(user));
 
-		long[] fromServLong = tea.byteArrToLongArr(promptBytes);
-		tea.decrypt(fromServLong, sharedKeyLong);
-		promptBytes = tea.longArrToByteArr(fromServLong);
-		System.out.println("Server: " + new String(promptBytes));
-		// System.out.println(port + ": " + new String(fromServer));
-				
-		// if(fromServer.equalsIgnoreCase("finish"))
-			// shutDown(port + " has closed its connection", sock);
+		prompt = "Please enter your password";
+		promptBytes = tea.teaEncrypt(prompt.getBytes(), sharedKey.getEncoded());
+		commStream.sendBytes(promptBytes);
+
 		return false;
 	}
 
