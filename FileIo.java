@@ -56,4 +56,27 @@ public class FileIo
 			e.printStackTrace();
 		}
 	}
+
+	public String getShadowPw(String usr)	
+	{
+		System.out.println("var: " + usr);
+		String line = "";
+		try
+		{
+			BufferedReader buf = new BufferedReader(new FileReader("shadow.txt"));
+			while((line = buf.readLine()) != null)
+			{
+				String[] userPw = line.split(" ");
+				System.out.println("user: " + userPw[0] + " pw: " + userPw[1]);
+				if(usr.trim().equals(userPw[0].trim()))
+					return userPw[1];
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return "";
+	}
 }

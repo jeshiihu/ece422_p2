@@ -17,23 +17,21 @@ public class UserPwCreator
 {
 	public static void main(String[] args) 
 	{
-		if(args.length != 2)
+		if(args.length != 1)
 		{
-			System.err.println("Error: expected 2 args {input.txt output.txt}");
+			System.err.println("Error: expected 1 args {input.txt}");
 			return;
 		}
 
 		FileIo fileIo = new FileIo();
-		if(!fileIo.validTxtFile(args[0]) || !fileIo.validTxtFile(args[1])
-			|| !fileIo.fileExists(args[0]))
+		if(!fileIo.validTxtFile(args[0]) || !fileIo.fileExists(args[0]))
 		{
 			System.err.println("Error: filenames must have the .txt extention");
 			return;
 		}
 
 		String fin = args[0];
-		String fout = args[1];
-
+		String fout = "shadow.txt";
 		if(!fileIo.createOutputFile(fout))
 		{
 			System.err.println("Error: failed to create output file");

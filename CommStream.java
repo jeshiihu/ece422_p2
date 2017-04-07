@@ -10,6 +10,7 @@ public class CommStream
 {
 	private DataOutputStream out;
 	private DataInputStream in;
+	private	Console con = System.console();
 
 	public CommStream(Socket sock) throws Exception
 	{
@@ -18,30 +19,17 @@ public class CommStream
 		in = new DataInputStream(sock.getInputStream());
 	}
 
-	// public void sendString(String s) throws Exception
-	// {
-	// 	sendBytes(s.getBytes());
-	// }
-
 	public void sendBytes(byte[] b) throws Exception
 	{
 		out.writeInt(b.length);
 		out.write(b);
-		System.out.println("sent " + Integer.toString(b.length) + " bytes");
-		// System.out.println(new String(b));
+		// System.out.println("sent " + Integer.toString(b.length) + " bytes");
 	}
-
-	// public String receiveString() throws Exception
-	// {
-	// 	byte[] b = receiveBytes();
-	// 	return new String(b);
-	// }
 
 	public byte[] receiveBytes() throws Exception
 	{
-		// DataInputStream in = new DataInputStream(sock.getInputStream());
 		int len = in.readInt();
-		System.out.println("received " + Integer.toString(len) + " bytes");
+		// System.out.println("received " + Integer.toString(len) + " bytes");
 
 		if(len <= 0)
 			throw new Exception("Failed to receive message");
@@ -49,14 +37,20 @@ public class CommStream
 		byte[] b = new byte[len];
 		in.readFully(b, 0, len);
 
-		// System.out.println(new String(b));
 		return b;
 	}
 
-	public byte[] getUserInput() throws Exception
+	public byte[] getUserInput(String prompt, boolean pw) throws Exception
 	{
-		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-		String input = inFromUser.readLine();
+		String input;
+		if(pw)
+		{
+			char[] chars = con.readPassword(prompt + ": ");
+			input = String.valueOf(chars);
+		}
+		else
+			input = con.readLine(prompt + ": ");
+		
 		if(input == null)
 			throw new Exception("Null input from user");
 

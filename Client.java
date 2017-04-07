@@ -6,6 +6,8 @@ import java.net.*;
 import java.io.*;
 import java.security.*;
 import javax.crypto.*;
+import java.io.Console;
+
 
 public class Client {
 	static private String hostname = "127.0.0.1";
@@ -125,17 +127,26 @@ public class Client {
 
 	private static boolean validateLogin() throws Exception
 	{
-		byte[] fromServer = commStream.receiveBytes();
-		fromServer = tea.teaDecrypt(fromServer, sharedKey.getEncoded());
-		System.out.println("Server: " + new String(fromServer));
+		// get login prompt from server
+		byte[] b = commStream.receiveBytes();
+		b = tea.teaDecrypt(b, sharedKey.getEncoded());
+		// System.out.println("Server: " + new String(b));
 
-		byte[] user = commStream.getUserInput();
-		user = tea.teaEncrypt(user, sharedKey.getEncoded());
-		commStream.sendBytes(user);
+		// send username
+		b = commStream.getUserInput(new String(b), false);
+		b = tea.teaEncrypt(b, sharedKey.getEncoded());
+		commStream.sendBytes(b);
 
-		fromServer = commStream.receiveBytes();
-		fromServer = tea.teaDecrypt(fromServer, sharedKey.getEncoded());
-		System.out.println("Server: " + new String(fromServer));
+		// get pw prompt from server
+		b = commStream.receiveBytes();
+		b = tea.teaDecrypt(b, sharedKey.getEncoded());
+		// System.out.println("Server: " + new String(b));
+
+		// send pw
+		b = commStream.getUserInput(new String(b), true);
+		b = tea.teaEncrypt(b, sharedKey.getEncoded());
+		commStream.sendBytes(b);
+
 
 		return false;
 	}

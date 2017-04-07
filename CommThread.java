@@ -100,20 +100,49 @@ public class CommThread extends Thread
 
 	private static boolean validateLogin() throws Exception
 	{
+		// send login prompt
 		String prompt = "Please enter your username";
-		byte[] promptBytes = tea.teaEncrypt(prompt.getBytes(), sharedKey.getEncoded());
-		commStream.sendBytes(promptBytes);
+		byte[] b = tea.teaEncrypt(prompt.getBytes(), sharedKey.getEncoded());
+		commStream.sendBytes(b);
 
 		// get username
-		byte[] user = commStream.receiveBytes();
-		user = tea.teaDecrypt(user, sharedKey.getEncoded());
-		System.out.println(port + " username: " + new String(user));
+		b = commStream.receiveBytes();
+		b = tea.teaDecrypt(b, sharedKey.getEncoded());
+		String usr = new String(b);
+		usr.trim();
+		System.out.println(port + " username: " + usr);
 
+		// send pw prompt
 		prompt = "Please enter your password";
-		promptBytes = tea.teaEncrypt(prompt.getBytes(), sharedKey.getEncoded());
-		commStream.sendBytes(promptBytes);
+		b = tea.teaEncrypt(prompt.getBytes(), sharedKey.getEncoded());
+		commStream.sendBytes(b);
 
-		return false;
+		// get pw
+		b = commStream.receiveBytes();
+		b = tea.teaDecrypt(b, sharedKey.getEncoded());
+		System.out.println(port + " password is received");
+
+		if(!findInShadow(usr, b))
+			return false;
+
+		return true;
+	}
+
+	private static boolean findInShadow(String usr, byte[] pw) throws Exception
+	{
+		FileIo fio = new FileIo();
+		if(usr.trim().equals("Jess"))
+			System.out.println("whyyy");
+
+		String shadow = fio.getShadowPw(usr);
+		
+		HashHelper hh = new HashHelper("SHA-1");
+		System.out.println(hh.encrypt("hi"));
+		// System.out.println(new String(pw));
+		String pStr = new String(pw);
+		String hex = hh.encrypt(pStr.trim());
+
+		return hh.matches(shadow,hex);
 	}
 
 	private void shutDown(String msg, Socket sock)
