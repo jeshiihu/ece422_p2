@@ -15,16 +15,21 @@ public class CommThread extends Thread
 {
 	private ServerSocket serverSock;
 	private Socket clientSock;
+	
+	static private SecretKey pwKey;
+
 	static private String port;
 	static private CommStream commStream;
 
 	static private SecretKey sharedKey;
 	static private TEAEncryption tea = new TEAEncryption();
 
-	public CommThread(ServerSocket sSock, Socket cSock) throws Exception
+	public CommThread(ServerSocket sSock, Socket cSock, SecretKey passKey) throws Exception
 	{
 		serverSock = sSock;
 		clientSock = cSock;
+		pwKey = passKey;
+
 		commStream = new CommStream(cSock);
 		port = "[" + Integer.toString(clientSock.getPort()) + "]";
 	}
@@ -120,31 +125,32 @@ public class CommThread extends Thread
 		// get pw
 		b = commStream.receiveBytes();
 		b = tea.teaDecrypt(b, sharedKey.getEncoded());
-		System.out.println(port + " password is received");
+		System.out.println(port + " password is received " + new String(b, "UTF-8"));
 
-		if(!findInShadow(usr, b))
-			return false;
-
-		return true;
+		return findInShadow(usr, new String(b, "UTF-8"));
 	}
 
-	private static boolean findInShadow(String usr, byte[] pw) throws Exception
+	/**
+	 * [findInShadow description]
+	 * @param  usr       [description]
+	 * @param  pw        [Encrypted password!]
+	 * @return           [description]
+	 * @throws Exception [description]
+	 */
+	private static boolean findInShadow(String usr, String pw) throws Exception
 	{
 		FileIo fio = new FileIo();
-		if(usr.trim().equals("Jess"))
-			System.out.println("whyyy");
 
-		String shadow = fio.getShadowPw(usr);
-		
-		HashHelper hh = new HashHelper("SHA-1");
-		System.out.println(hh.encrypt("hi"));
-		// System.out.println(new String(pw,"UTF-8"));
-		String pStr = new String(pw,"UTF-8");
-		// System.out.println(pStr.getBytes("UTF-8"));
+		// HashHelper hh = new HashHelper("SHA-1");
+		byte[] shadow = fio.getShadowPw(usr);
+		shadow = tea.teaDecrypt(shadow, pwKey.getEncoded());
+		String shadowPw = new String(shadow, "UTF-8");
 
-		String hex = hh.encrypt(pStr);
-
-		return hh.matches(shadow,hex);
+		// byte[] hexBytes = tea.teaDecrypt(pw, pwKey.getEncoded());
+		// String hex = new String(hexBytes, "UTF-8");
+		// byte[] shadBytes = shadow.getBytes("UTF-8");
+		System.out.println("shad: " + shadowPw + ", pw: " + pw);
+		return true;
 	}
 
 	private void shutDown(String msg, Socket sock)

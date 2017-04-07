@@ -14,77 +14,96 @@ public class TEAEncryption
 	
 	public byte[] teaEncrypt(byte[] data, byte[] key)
 	{
-		long[] lData = byteArrToLongArr(data);
-		long[] lKey = byteArrToLongArr(key);
-		encrypt(lData, lKey);
+		int[] iData = bytesToInts(data);
+		int[] iKey = bytesToInts(key);
+		encrypt(iData, iKey);
 
-		return longArrToByteArr(lData);
+		return removePadding(intsToBytes(iData));
 	}
 
 	public byte[] teaDecrypt(byte[] data, byte[] key)
 	{
-		long[] lData = byteArrToLongArr(data);
-		long[] lKey = byteArrToLongArr(key);
-		decrypt(lData, lKey);
+		int[] iData = bytesToInts(data);
+		int[] iKey = bytesToInts(key);
+		decrypt(iData, iKey);
 
-		// byte[] b = removePadding(longArrToByteArr(lData));
-
-		return longArrToByteArr(lData);
+		return removePadding(intsToBytes(iData));
 	}
 
-	private native void encrypt(long[] v, long[] k);
-	private native void decrypt(long[] v, long[] k);
+	private native void encrypt(int[] v, int[] k);
+	private native void decrypt(int[] v, int[] k);
 
 	// http://stackoverflow.com/questions/9303604/rounding-up-a-number-to-nearest-multiple-of-5
-	private int roundUpClosestMult8(int num) 
+	private int roundUpClosestMult(int mult, int num) 
 	{
-		int nearest = ((num + 4)/8) * 8;
-		if(nearest < num)
-			nearest = nearest + 8;
+		// System.out.println("num: " + Integer.toString(num));
 
-		if(nearest <= 8)
-			nearest = 16;
+		int nearest = ((num + (mult)/2)/mult) * mult;
+		if(nearest < num)
+			nearest = nearest + mult;
+
+		// System.out.println("nearest: " + Integer.toString(nearest));
+		if(nearest <= mult)
+		{
+			nearest = mult*2;
+			// System.out.println("now: " + Integer.toString(nearest) + "\n");
+		}
 		
     	return nearest;
 	}
 
-	private long[] byteArrToLongArr(byte[] bytes)
+	private int[] bytesToInts(byte[] bytes)
 	{
 		// use bytebuffer and pad!
-		// http://stackoverflow.com/questions/4485128/how-do-i-convert-long-to-byte-and-back-in-java
-		// long is 64 bits, therefore 8 bytes
-		// ensure that the length of bytes is a multiple of 8
+		// https://docs.oracle.com/javase/7/docs/api/java/nio/ByteBuffer.html
 		int bytesLen = bytes.length;
-		int mult8 = roundUpClosestMult8(bytesLen);
+		int mult = roundUpClosestMult(4, bytesLen);
+        int[] ints = new int[mult/4];
 
-		byte[] paddedBytes = new byte[mult8];
-		int diff = mult8 - bytesLen;
-		for(int i = 0; i<mult8;i++)
-		{	// pad 0s at the end!
-			if(i >= bytesLen)
-				paddedBytes[i] = (byte)0;
-			else
-				paddedBytes[i] = bytes[i];
-		}
+		ByteBuffer bBuf = ByteBuffer.allocate(mult);
 
-		int longLen = (int)Math.ceil(paddedBytes.length/8);
-		long[] l = new long[longLen];
-		int ind = 0;
+		byte[] paddedBuffer = new byte[mult];
+ 		
+ 		for(int i = 0; i<mult; i++)
+ 		{
+ 			int diff = mult-bytesLen;
+ 			if(i < diff)
+ 				paddedBuffer[i] = (byte)0;
+ 			else
+ 				paddedBuffer[i] = bytes[i-diff];
+ 			// 		
+ 			// if(i >= bytesLen)
+ 			// 	paddedBuffer[i] = (byte)0;
+ 			// else
+ 			// 	paddedBuffer[i] = bytes[i];
+ 		}
 
-		for(int i = 0; i< paddedBytes.length; i+=8)
+ 		bBuf.put(paddedBuffer);
+ 		bBuf.order(ByteOrder.BIG_ENDIAN);
+        bBuf.flip();
+
+        // process all
+        while (bBuf.remaining() > 0)
+            ints[bBuf.position()/4] = bBuf.getInt();
+
+		return removePadding(ints);
+	}
+
+	private int[] removePadding(int[] ints)
+	{
+		// get rid of padded 0s
+		int idx = ints.length-1;
+		for(;idx>=0;idx--)
 		{
-			byte[] eightBytes = new byte[8];
-			for(int j=0; j<8;j++)
-				eightBytes[j] = paddedBytes[i+j];
-
-			ByteBuffer buf = ByteBuffer.allocate(Long.BYTES);
-			buf.put(eightBytes);
-			buf.flip();
-			l[ind] = buf.getLong();
-			ind++;
+			if(ints[idx] != 0)
+				break;
 		}
 
-		return l;
+		int[] newInts = new int[idx+1];
+		for(int i = 0; i<idx+1; i++)
+			newInts[i] = ints[i];
+
+		return newInts;
 	}
 
 	private byte[] removePadding(byte[] b)
@@ -104,24 +123,14 @@ public class TEAEncryption
 		return newB;
 	}
 
-	private byte[] longArrToByteArr(long[] lArr)
+	private byte[] intsToBytes(int[] ints)
 	{
-		byte[] b = new byte[lArr.length*8];
-		
-		for(int i=0;i<lArr.length;i++)
+		ByteBuffer buffer = ByteBuffer.allocate(ints.length*4);
+		for(int i=0;i<ints.length;i++)
 		{	
-			ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-    		buffer.putLong(lArr[i]);
-    		byte[] eightBytes = buffer.array();
-    		int ind = 0;
-			for(int j=i*8;j<(i*8)+8;j++)
-			{
-				b[j] = eightBytes[ind];
-				// System.out.println(b[j]);
-				ind++;
-			}
+    		buffer.putInt(ints[i]);
 		}
-		
-		return b;
+
+		return buffer.array();
 	}
 }

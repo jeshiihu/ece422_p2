@@ -1,7 +1,7 @@
-void encrypt (long *v, long *k){
+void encrypt (int *v, int *k){
 /* TEA encryption algorithm */
-unsigned long y = v[0], z=v[1], sum = 0;
-unsigned long delta = 0x9e3779b9, n=32;
+unsigned int y = v[0], z=v[1], sum = 0;
+unsigned int delta = 0x9e3779b9, n=32;
 
 	while (n-- > 0){
 		sum += delta;
