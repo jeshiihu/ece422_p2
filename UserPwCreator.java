@@ -46,6 +46,7 @@ public class UserPwCreator
 			while((line = buf.readLine()) != null)
 			{
 				String[] userPw = line.split(" ");
+				System.out.println(userPw[0].getBytes("UTF-8"));
 				String hashed = userPw[0] + " " + sha1.encrypt(userPw[1]);
 				fileIo.addNewLine(fout, hashed);
 			}

@@ -54,6 +54,6 @@ public class CommStream
 		if(input == null)
 			throw new Exception("Null input from user");
 
-		return input.getBytes();
+		return input.getBytes("UTF-8");
 	}
 }

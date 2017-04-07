@@ -130,10 +130,11 @@ public class Client {
 		// get login prompt from server
 		byte[] b = commStream.receiveBytes();
 		b = tea.teaDecrypt(b, sharedKey.getEncoded());
+
 		// System.out.println("Server: " + new String(b));
 
 		// send username
-		b = commStream.getUserInput(new String(b), false);
+		b = commStream.getUserInput(new String(b,"UTF-8"), false);
 		b = tea.teaEncrypt(b, sharedKey.getEncoded());
 		commStream.sendBytes(b);
 
@@ -143,7 +144,7 @@ public class Client {
 		// System.out.println("Server: " + new String(b));
 
 		// send pw
-		b = commStream.getUserInput(new String(b), true);
+		b = commStream.getUserInput(new String(b,"UTF-8"), true);
 		b = tea.teaEncrypt(b, sharedKey.getEncoded());
 		commStream.sendBytes(b);
 

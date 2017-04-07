@@ -27,6 +27,8 @@ public class TEAEncryption
 		long[] lKey = byteArrToLongArr(key);
 		decrypt(lData, lKey);
 
+		// byte[] b = removePadding(longArrToByteArr(lData));
+
 		return longArrToByteArr(lData);
 	}
 
@@ -85,6 +87,23 @@ public class TEAEncryption
 		return l;
 	}
 
+	private byte[] removePadding(byte[] b)
+	{
+		// get rid of padded 0s
+		int idx = b.length-1;
+		for(;idx>=0;idx--)
+		{
+			if(b[idx] != 0)
+				break;
+		}
+
+		byte[] newB = new byte[idx+1];
+		for(int i = 0; i<idx+1; i++)
+			newB[i] = b[i];
+
+		return newB;
+	}
+
 	private byte[] longArrToByteArr(long[] lArr)
 	{
 		byte[] b = new byte[lArr.length*8];
@@ -98,6 +117,7 @@ public class TEAEncryption
 			for(int j=i*8;j<(i*8)+8;j++)
 			{
 				b[j] = eightBytes[ind];
+				// System.out.println(b[j]);
 				ind++;
 			}
 		}

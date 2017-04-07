@@ -22,7 +22,8 @@ public class HashHelper {
 
 	public String encrypt(String str) throws Exception
 	{
-		md.update(str.getBytes("utf8"));
+		str = str.replaceAll("(\\s|\\n)", "");
+		md.update(str.getBytes("UTF8"));
 		return bytesToHex(md.digest());
 	}
 

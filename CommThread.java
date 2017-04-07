@@ -102,19 +102,19 @@ public class CommThread extends Thread
 	{
 		// send login prompt
 		String prompt = "Please enter your username";
-		byte[] b = tea.teaEncrypt(prompt.getBytes(), sharedKey.getEncoded());
+		byte[] b = tea.teaEncrypt(prompt.getBytes("UTF-8"), sharedKey.getEncoded());
 		commStream.sendBytes(b);
 
 		// get username
 		b = commStream.receiveBytes();
 		b = tea.teaDecrypt(b, sharedKey.getEncoded());
-		String usr = new String(b);
+		String usr = new String(b, "UTF-8");
 		usr.trim();
 		System.out.println(port + " username: " + usr);
 
 		// send pw prompt
 		prompt = "Please enter your password";
-		b = tea.teaEncrypt(prompt.getBytes(), sharedKey.getEncoded());
+		b = tea.teaEncrypt(prompt.getBytes("UTF-8"), sharedKey.getEncoded());
 		commStream.sendBytes(b);
 
 		// get pw
@@ -138,9 +138,11 @@ public class CommThread extends Thread
 		
 		HashHelper hh = new HashHelper("SHA-1");
 		System.out.println(hh.encrypt("hi"));
-		// System.out.println(new String(pw));
-		String pStr = new String(pw);
-		String hex = hh.encrypt(pStr.trim());
+		// System.out.println(new String(pw,"UTF-8"));
+		String pStr = new String(pw,"UTF-8");
+		// System.out.println(pStr.getBytes("UTF-8"));
+
+		String hex = hh.encrypt(pStr);
 
 		return hh.matches(shadow,hex);
 	}
