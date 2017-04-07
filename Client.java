@@ -19,8 +19,8 @@ public class Client {
 	public static void main(String[] args) throws Exception
 	{
 		System.loadLibrary("tea");
-		
 		Socket sock = startConnection();
+		
 		if(sock == null)
 		{
 			System.err.println("Error: Client failed to connect to port " +
@@ -38,6 +38,9 @@ public class Client {
 			sock.close();
 			return;
 		}
+
+    	System.out.println("Valid login!");
+
 
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
     	DataOutputStream clientOutput = new DataOutputStream(sock.getOutputStream());
@@ -131,8 +134,6 @@ public class Client {
 		byte[] b = commStream.receiveBytes();
 		b = tea.teaDecrypt(b, sharedKey.getEncoded());
 
-		// System.out.println("Server: " + new String(b));
-
 		// send username
 		b = commStream.getUserInput(new String(b,"UTF-8"), false);
 		b = tea.teaEncrypt(b, sharedKey.getEncoded());
@@ -141,15 +142,19 @@ public class Client {
 		// get pw prompt from server
 		b = commStream.receiveBytes();
 		b = tea.teaDecrypt(b, sharedKey.getEncoded());
-		// System.out.println("Server: " + new String(b));
 
 		// send pw
 		b = commStream.getUserInput(new String(b,"UTF-8"), true);
 		b = tea.teaEncrypt(b, sharedKey.getEncoded());
 		commStream.sendBytes(b);
 
+		// receive access-granted or not!
+		b = commStream.receiveBytes();
+		b = tea.teaDecrypt(b, sharedKey.getEncoded());
+		String msg = new String(b, "UTF-8");
+		msg = msg.trim();
 
-		return false;
+		return msg.equals("access-granted");
 	}
 }
 

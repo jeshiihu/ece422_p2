@@ -74,7 +74,6 @@ public class FileIo
 				List<byte[]> userPw = splitBytesBy(b, " ");
 				// System.out.println(Integer.toString(userPw.size()));
 				String username = new String(userPw.get(0), "UTF-8");
-				System.out.println("user: " + username + "want: " + usr);
 				if(username.trim().equals(usr.trim()))
 					return userPw.get(1);
 			}
@@ -103,9 +102,6 @@ public class FileIo
 			if((i+delimLen) <= data.length) 
 			{
 				byte[] check = Arrays.copyOfRange(data, i, i+delimLen);
-				// System.out.println("delim size: " + Integer.toString(delimLen));
-				// System.out.println("check size: " + Integer.toString(check.length));
-
 				boolean matches = true;
 				for(int j = 0; j < delimLen; j++)
 				{

@@ -80,17 +80,13 @@ public class Server
 
 			String nl = "\n";
 			byte[] nlBytes = nl.getBytes("UTF-8");
-			// userBytes + new String(encryptedPw, "UTF-8");
+
 			outputStream.write(userBytes);
 			outputStream.write(encryptedPw);
 			outputStream.write(nlBytes);
-
-
-			// fileIo.addNewLine(fout, hashed);
 		}
 
 		byte[] allData = outputStream.toByteArray( );
-
 		Files.write(Paths.get(fout), allData);
 		
 		return key;

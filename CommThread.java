@@ -50,8 +50,19 @@ public class CommThread extends Thread
     		if(!validateLogin())
     		{
     			System.out.println("Client " + port + " login failed");
+    			
+    			String prompt = "access-denied";
+				byte[] b = tea.teaEncrypt(prompt.getBytes("UTF-8"), sharedKey.getEncoded());
+				commStream.sendBytes(b);
+
 				return;
     		}
+
+   			System.out.println("Client " + port + " login successful");
+
+    		String prompt = "access-granted";
+			byte[] b = tea.teaEncrypt(prompt.getBytes("UTF-8"), sharedKey.getEncoded());
+			commStream.sendBytes(b);
 
 			String fromConnectedClient;
 			while((fromConnectedClient = in.readLine()) != null)
@@ -115,7 +126,7 @@ public class CommThread extends Thread
 		b = tea.teaDecrypt(b, sharedKey.getEncoded());
 		String usr = new String(b, "UTF-8");
 		usr.trim();
-		System.out.println(port + " username: " + usr);
+		System.out.println("Client " + port + " username: " + usr);
 
 		// send pw prompt
 		prompt = "Please enter your password";
@@ -125,7 +136,7 @@ public class CommThread extends Thread
 		// get pw
 		b = commStream.receiveBytes();
 		b = tea.teaDecrypt(b, sharedKey.getEncoded());
-		System.out.println(port + " password is received " + new String(b, "UTF-8"));
+		System.out.println("Client " + port + " password is received " + new String(b, "UTF-8"));
 
 		return findInShadow(usr, new String(b, "UTF-8"));
 	}
@@ -141,16 +152,12 @@ public class CommThread extends Thread
 	{
 		FileIo fio = new FileIo();
 
-		// HashHelper hh = new HashHelper("SHA-1");
 		byte[] shadow = fio.getShadowPw(usr);
 		shadow = tea.teaDecrypt(shadow, pwKey.getEncoded());
 		String shadowPw = new String(shadow, "UTF-8");
 
-		// byte[] hexBytes = tea.teaDecrypt(pw, pwKey.getEncoded());
-		// String hex = new String(hexBytes, "UTF-8");
-		// byte[] shadBytes = shadow.getBytes("UTF-8");
-		System.out.println("shad: " + shadowPw + ", pw: " + pw);
-		return true;
+		// System.out.println("shad: " + shadowPw + ", pw: " + pw);
+		return shadowPw.equals(pw);
 	}
 
 	private void shutDown(String msg, Socket sock)
