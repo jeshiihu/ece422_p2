@@ -38,8 +38,11 @@ public class TEAEncryption
 	{
 		int nearest = ((num + 4)/8) * 8;
 		if(nearest < num)
-			return nearest + 8;
+			nearest = nearest + 8;
 
+		if(nearest <= 8)
+			nearest = 16;
+		
     	return nearest;
 	}
 
@@ -53,19 +56,14 @@ public class TEAEncryption
 		int mult8 = roundUpClosestMult8(bytesLen);
 
 		byte[] paddedBytes = new byte[mult8];
-		if(mult8 != bytesLen) // not a multiple
-		{
-			int diff = mult8 - bytesLen;
-			for(int i = 0; i<mult8;i++)
-			{	// pad 0s at the end!
-				if(i >= bytesLen)
-					paddedBytes[i] = (byte)0;
-				else
-					paddedBytes[i] = bytes[i];
-			}
+		int diff = mult8 - bytesLen;
+		for(int i = 0; i<mult8;i++)
+		{	// pad 0s at the end!
+			if(i >= bytesLen)
+				paddedBytes[i] = (byte)0;
+			else
+				paddedBytes[i] = bytes[i];
 		}
-		else
-			paddedBytes = bytes;
 
 		int longLen = (int)Math.ceil(paddedBytes.length/8);
 		long[] l = new long[longLen];

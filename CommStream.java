@@ -27,7 +27,7 @@ public class CommStream
 	{
 		out.writeInt(b.length);
 		out.write(b);
-		// System.out.println("sent " + Integer.toString(b.length) + " bytes");
+		System.out.println("sent " + Integer.toString(b.length) + " bytes");
 		// System.out.println(new String(b));
 	}
 
@@ -41,7 +41,7 @@ public class CommStream
 	{
 		// DataInputStream in = new DataInputStream(sock.getInputStream());
 		int len = in.readInt();
-		// System.out.println("received " + Integer.toString(len) + " bytes");
+		System.out.println("received " + Integer.toString(len) + " bytes");
 
 		if(len <= 0)
 			throw new Exception("Failed to receive message");

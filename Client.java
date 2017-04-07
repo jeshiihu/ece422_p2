@@ -130,7 +130,7 @@ public class Client {
 		System.out.println("Server: " + new String(fromServer));
 
 		byte[] user = commStream.getUserInput();
-		// user = tea.teaEncrypt(user, sharedKey.getEncoded());
+		user = tea.teaEncrypt(user, sharedKey.getEncoded());
 		commStream.sendBytes(user);
 
 		fromServer = commStream.receiveBytes();

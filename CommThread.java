@@ -106,7 +106,7 @@ public class CommThread extends Thread
 
 		// get username
 		byte[] user = commStream.receiveBytes();
-		// user = tea.teaDecrypt(user, sharedKey.getEncoded());
+		user = tea.teaDecrypt(user, sharedKey.getEncoded());
 		System.out.println(port + " username: " + new String(user));
 
 		prompt = "Please enter your password";
