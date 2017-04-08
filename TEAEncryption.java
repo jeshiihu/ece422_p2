@@ -18,7 +18,7 @@ public class TEAEncryption
 		int[] iKey = bytesToInts(key);
 		encrypt(iData, iKey);
 
-		return removePadding(intsToBytes(iData));
+		return intsToBytes(iData);
 	}
 
 	public byte[] teaDecrypt(byte[] data, byte[] key)
@@ -89,27 +89,27 @@ public class TEAEncryption
 		}
 
 		int[] newInts = new int[idx+1];
-		for(int i = 0; i<idx+1; i++)
-			newInts[i] = ints[i];
+		for(int j = 0; j< newInts.length; j++)
+			newInts[j] = ints[j];
 
 		return newInts;
 	}
 
 	private byte[] removePadding(byte[] b)
 	{
-		// get rid of padded 0s
-		int idx = b.length-1;
-		for(;idx>=0;idx--)
+		int idx = 0;
+		for(;idx<b.length;idx++)
 		{
 			if(b[idx] != 0)
 				break;
 		}
 
-		byte[] newB = new byte[idx+1];
-		for(int i = 0; i<idx+1; i++)
-			newB[i] = b[i];
-
-		return newB;
+		// System.out.println("INDEX: "+ Integer.toString(idx));
+		byte[] newBytes = new byte[b.length-idx];
+		for(int j = 0; j< newBytes.length; j++)
+			newBytes[j] = b[j+idx];
+			
+		return newBytes;
 	}
 
 	private byte[] intsToBytes(int[] ints)

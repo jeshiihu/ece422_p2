@@ -59,12 +59,29 @@ public class FileIo
 		}
 	}
 
+	public byte[] readFile(String fname)
+	{
+		if(!fileExists(fname))
+			return null;
+
+		try
+		{
+			return Files.readAllBytes(Paths.get(fname));
+		}
+		catch(Exception e)
+		{
+			System.err.println("Failed to read the file bytes");
+		}
+
+		return null;
+	}
+
 	public byte[] getShadowPw(String usr)	
 	{
 		String line = "";
 		try
 		{
-			byte[] data = Files.readAllBytes(Paths.get("shadow.txt"));
+			byte[] data = readFile("shadow.txt");
 			List<byte[]> byteLines = splitBytesBy(data, "\n");
 
 			for(byte[] b : byteLines)

@@ -142,14 +142,34 @@ public class CommThread extends Thread
 
 	private void startFileSharing() throws Exception
 	{
-		String fname = "";
-		while(!fname.equals("finished"))
+		FileIo fio = new FileIo();
+
+		while(true)
 		{
 			byte[] msg = commStream.receiveBytes();
 			msg = tea.teaDecrypt(msg, sharedKey.getEncoded());
 			
-			fname = new String(msg, "UTF-8");
+			String fname = new String(msg, "UTF-8");
 			System.out.println(port + ": " + fname);
+			if(fname.equals("finished"))
+				break;
+			
+			byte[] fileBytes = null;
+			if((fileBytes = fio.readFile(fname)) == null)
+			{	// send a failed error message
+				String prompt = "file not found";
+				byte[] b = tea.teaEncrypt(prompt.getBytes("UTF-8"), sharedKey.getEncoded());
+				commStream.sendBytes(b);
+			}
+			else
+			{	// send the successful ack and encrypted file
+				String prompt = "file found";
+				byte[] b = tea.teaEncrypt(prompt.getBytes("UTF-8"), sharedKey.getEncoded());
+				commStream.sendBytes(b);
+
+				b = tea.teaEncrypt(fileBytes, sharedKey.getEncoded());
+				commStream.sendBytes(b);
+			}
 		}
 
 		System.out.println("Client has finished all requests");

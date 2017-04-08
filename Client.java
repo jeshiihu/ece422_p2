@@ -7,7 +7,7 @@ import java.io.*;
 import java.security.*;
 import javax.crypto.*;
 import java.io.Console;
-
+import java.nio.file.*;
 
 public class Client {
 	static private String hostname = "127.0.0.1";
@@ -43,7 +43,7 @@ public class Client {
 
 	    	System.out.println("Valid login! Ready to send file requests");
 	    	startFileSharing();
-	    	
+
 			System.out.println("Client closed by quitting");
 		}
 		catch(Exception e)
@@ -144,14 +144,35 @@ public class Client {
 
 	private static void startFileSharing() throws Exception
 	{
-		String fname = "";
-		while(!fname.equals("finished"))
+		while(true)
 		{
+			// send the filename!
 			byte[] msg = commStream.getUserInput("Filename Request", false);
-			fname = new String(msg, "UTF-8");
+			String fname = new String(msg, "UTF-8");
 
 			msg = tea.teaEncrypt(msg, sharedKey.getEncoded());
 			commStream.sendBytes(msg);
+
+			if(fname.equals("finished"))
+				break;
+
+			// check the ack message or error message
+			msg = commStream.receiveBytes();
+			msg = tea.teaDecrypt(msg, sharedKey.getEncoded());
+
+			String sMsg = new String(msg, "UTF-8");
+			System.out.println("Server: " + sMsg);
+
+			if(sMsg.trim().equals("file found"))
+			{
+				msg = commStream.receiveBytes();
+				msg = tea.teaDecrypt(msg, sharedKey.getEncoded());
+
+				FileIo fio = new FileIo();
+				fio.createOutputFile(fname);
+				Files.write(Paths.get(fname), msg);
+				System.out.println("File has been created\n");
+			}
 		}
 	}
 }
