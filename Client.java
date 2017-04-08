@@ -1,6 +1,10 @@
 /**
  * Java program: client
  */
+import helper.CommStream;
+import helper.DHCrypt;
+import helper.FileIo;
+
 import java.math.BigInteger;
 import java.net.*;
 import java.io.*;
@@ -169,8 +173,8 @@ public class Client {
 				msg = tea.teaDecrypt(msg, sharedKey.getEncoded());
 
 				FileIo fio = new FileIo();
-				fio.createOutputFile(fname);
-				Files.write(Paths.get(fname), msg);
+				fio.createOutputFile("clientFiles/" + fname);
+				Files.write(Paths.get("clientFiles/" + fname), msg);
 				System.out.println("File has been created\n");
 			}
 		}

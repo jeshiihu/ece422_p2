@@ -5,6 +5,10 @@
  * help from
  * http://stackoverflow.com/questions/5419328/multiple-client-to-server-communication-program-in-java
  */
+import helper.CommStream;
+import helper.DHCrypt;
+import helper.FileIo;
+
 import java.net.*;
 import java.io.*;
 import java.security.*;
@@ -155,7 +159,7 @@ public class CommThread extends Thread
 				break;
 			
 			byte[] fileBytes = null;
-			if((fileBytes = fio.readFile(fname)) == null)
+			if((fileBytes = fio.readFile("serverFiles/" + fname)) == null)
 			{	// send a failed error message
 				String prompt = "file not found";
 				byte[] b = tea.teaEncrypt(prompt.getBytes("UTF-8"), sharedKey.getEncoded());

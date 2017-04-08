@@ -3,6 +3,7 @@
  *
  * since so much code was being repeated, wrapped it in nicer functions
  */
+package helper;
 import java.net.*;
 import java.io.*;
 

@@ -4,6 +4,7 @@
  * http://exampledepot.8waytrips.com/egs/javax.crypto/KeyAgree.html
  * https://docs.oracle.com/javase/7/docs/api/java/security/SecureRandom.html
  */
+package helper;
 
 import java.math.BigInteger;
 import java.security.*;

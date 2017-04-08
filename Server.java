@@ -4,6 +4,8 @@
  * Code is based on the following online source
  * http://introcs.cs.princeton.edu/java/84network/EchoServer.java.html
  */
+import helper.FileIo;
+
 import java.net.*;
 import java.io.*;
 import javax.crypto.*;
@@ -16,40 +18,6 @@ public class Server
 
 	public static void main(String[] args) throws Exception
 	{
-		// KeyGenerator gen = KeyGenerator.getInstance("AES");
-		// SecretKey key = gen.generateKey();
-
-		// System.loadLibrary("tea");
-		// TEAEncryption tea = new TEAEncryption();
-
-		// // TEST
-		// String str = "encrypt me";
-		// System.out.println("string to encrypt: " + str);
-		// byte[] by = str.getBytes("UTF-8");
-
-		// System.out.println("Bytes before");
-		// for(byte b: by)
-		// {
-		// 	System.out.println(b);
-		// }
-
-		// by = tea.teaEncrypt(by, key.getEncoded());
-		// System.out.println("Bytes after");
-		// for(byte b: by)
-		// {
-		// 	System.out.println(b);
-		// }
-
-		// by = tea.teaDecrypt(by, key.getEncoded());
-		// System.out.println("Bytes after");
-		// for(byte b: by)
-		// {
-		// 	System.out.println(b);
-		// }
-
-		// System.out.println("string to decrypted: " + new String(by,"UTF-8"));
-		// return;
-
 		SecretKey pwKey = encryptShadowTxt();
 
 		ServerSocket sock = startConnection();

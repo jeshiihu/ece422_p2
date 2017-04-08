@@ -1,6 +1,7 @@
 /**
  * Java helper class to provide file management
  */
+package helper;
 
 import java.io.*;
 import java.util.regex.*;
