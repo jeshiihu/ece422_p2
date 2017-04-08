@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include  "helper_TEAEncryption.h"
+#include  "TEAEncryption.h"
 
 #include "encrypt.c"
 #include "decrypt.c"
