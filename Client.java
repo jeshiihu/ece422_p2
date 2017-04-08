@@ -20,52 +20,38 @@ public class Client {
 	{
 		System.loadLibrary("tea");
 		Socket sock = startConnection();
-		
-		if(sock == null)
+
+		try
 		{
-			System.err.println("Error: Client failed to connect to port " +
-				Integer.toString(port) + " and host " + hostname);
-			return;
-		}
-		System.out.println("Client successfully connected!");
-		commStream = new CommStream(sock);
-
-    	sharedKey = negotiateKey(sock.getInputStream(), sock.getOutputStream());
-
-    	if(!validateLogin())
-    	{
-    		System.out.println("Invalid login, closing connection");
-			sock.close();
-			return;
-		}
-
-    	System.out.println("Valid login!");
-
-
-		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-    	DataOutputStream clientOutput = new DataOutputStream(sock.getOutputStream());
-
-    	String fromCurrClient;
-		while((fromCurrClient = inFromUser.readLine()) != null)
-		{
-			// send to the server what client wrote to the terminal
-			fromCurrClient += "\n";
-
-
-			clientOutput.writeBytes(fromCurrClient + "\n");
-			clientOutput.flush();
-
-			System.out.println("MY input: " + fromCurrClient);
-			
-			if(fromCurrClient.equalsIgnoreCase("finish"))
+			if(sock == null)
 			{
-				System.out.println("Closing the connection with the server");
+				System.err.println("Error: Client failed to connect to port " +
+					Integer.toString(port) + " and host " + hostname);
+				return;
+			}
+			System.out.println("Client successfully connected!");
+			commStream = new CommStream(sock);
+
+	    	sharedKey = negotiateKey(sock.getInputStream(), sock.getOutputStream());
+
+	    	if(!validateLogin())
+	    	{
+	    		System.out.println("Invalid login, closing connection");
 				sock.close();
 				return;
 			}
+
+	    	System.out.println("Valid login! Ready to send file requests");
+	    	startFileSharing();
+	    	
+			System.out.println("Client closed by quitting");
+		}
+		catch(Exception e)
+		{
+			// e.printStackTrace();
+			System.err.println("Error: Client is quitting");
 		}
 
-		System.out.println("Client closed by quitting");
 		sock.close();
 	}
 
@@ -89,7 +75,6 @@ public class Client {
 	// http://stackoverflow.com/questions/14110986/new-objectinputstream-blocks
 	private static SecretKey negotiateKey(InputStream inStream, OutputStream outStream) throws Exception
 	{
-
     	// create the paramters for DH		
 		int size = 512;
 		SecureRandom rand = new SecureRandom();
@@ -155,6 +140,19 @@ public class Client {
 		msg = msg.trim();
 
 		return msg.equals("access-granted");
+	}
+
+	private static void startFileSharing() throws Exception
+	{
+		String fname = "";
+		while(!fname.equals("finished"))
+		{
+			byte[] msg = commStream.getUserInput("Filename Request", false);
+			fname = new String(msg, "UTF-8");
+
+			msg = tea.teaEncrypt(msg, sharedKey.getEncoded());
+			commStream.sendBytes(msg);
+		}
 	}
 }
 

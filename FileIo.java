@@ -61,18 +61,18 @@ public class FileIo
 
 	public byte[] getShadowPw(String usr)	
 	{
-		System.out.println("var: " + usr);
 		String line = "";
 		try
 		{
 			byte[] data = Files.readAllBytes(Paths.get("shadow.txt"));
 			List<byte[]> byteLines = splitBytesBy(data, "\n");
-			System.out.println(Integer.toString(byteLines.size()));
 
 			for(byte[] b : byteLines)
 			{
 				List<byte[]> userPw = splitBytesBy(b, " ");
-				// System.out.println(Integer.toString(userPw.size()));
+				if(userPw.size() == 0)
+					continue;
+
 				String username = new String(userPw.get(0), "UTF-8");
 				if(username.trim().equals(usr.trim()))
 					return userPw.get(1);
@@ -123,6 +123,4 @@ public class FileIo
 
 		return list;
 	}
-
-
 }

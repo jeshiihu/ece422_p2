@@ -36,18 +36,12 @@ public class TEAEncryption
 	// http://stackoverflow.com/questions/9303604/rounding-up-a-number-to-nearest-multiple-of-5
 	private int roundUpClosestMult(int mult, int num) 
 	{
-		// System.out.println("num: " + Integer.toString(num));
-
 		int nearest = ((num + (mult)/2)/mult) * mult;
 		if(nearest < num)
 			nearest = nearest + mult;
 
-		// System.out.println("nearest: " + Integer.toString(nearest));
 		if(nearest <= mult)
-		{
 			nearest = mult*2;
-			// System.out.println("now: " + Integer.toString(nearest) + "\n");
-		}
 		
     	return nearest;
 	}
@@ -71,11 +65,6 @@ public class TEAEncryption
  				paddedBuffer[i] = (byte)0;
  			else
  				paddedBuffer[i] = bytes[i-diff];
- 			// 		
- 			// if(i >= bytesLen)
- 			// 	paddedBuffer[i] = (byte)0;
- 			// else
- 			// 	paddedBuffer[i] = bytes[i];
  		}
 
  		bBuf.put(paddedBuffer);

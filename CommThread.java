@@ -13,20 +13,17 @@ import java.math.BigInteger;
 
 public class CommThread extends Thread 
 {
-	private ServerSocket serverSock;
 	private Socket clientSock;
-	
-	static private SecretKey pwKey;
+	private String port;
 
-	static private String port;
-	static private CommStream commStream;
+	private SecretKey sharedKey;
+	private SecretKey pwKey;
 
-	static private SecretKey sharedKey;
-	static private TEAEncryption tea = new TEAEncryption();
+	private CommStream commStream;
+	private TEAEncryption tea = new TEAEncryption();
 
-	public CommThread(ServerSocket sSock, Socket cSock, SecretKey passKey) throws Exception
+	public CommThread(Socket cSock, SecretKey passKey) throws Exception
 	{
-		serverSock = sSock;
 		clientSock = cSock;
 		pwKey = passKey;
 
@@ -40,16 +37,11 @@ public class CommThread extends Thread
 
 		try
 		{
-
-    		DataInputStream clientInput = new DataInputStream(clientSock.getInputStream());
-    		BufferedReader in = new BufferedReader(new InputStreamReader(clientSock.getInputStream()));
-    		DataOutputStream clientOutput = new DataOutputStream(clientSock.getOutputStream());
-
     		sharedKey = negotiateKey(clientSock.getInputStream(), clientSock.getOutputStream());
 
     		if(!validateLogin())
     		{
-    			System.out.println("Client " + port + " login failed");
+    			System.out.println(port + " login failed");
     			
     			String prompt = "access-denied";
 				byte[] b = tea.teaEncrypt(prompt.getBytes("UTF-8"), sharedKey.getEncoded());
@@ -58,25 +50,18 @@ public class CommThread extends Thread
 				return;
     		}
 
-   			System.out.println("Client " + port + " login successful");
+   			System.out.println(port + " login successful! Ready to receive file requests\n");
 
     		String prompt = "access-granted";
 			byte[] b = tea.teaEncrypt(prompt.getBytes("UTF-8"), sharedKey.getEncoded());
 			commStream.sendBytes(b);
 
-			String fromConnectedClient;
-			while((fromConnectedClient = in.readLine()) != null)
-			{
-				System.out.println(port + ": " + fromConnectedClient);
-				if(fromConnectedClient.equalsIgnoreCase("finish"))
-					shutDown(port + " has closed its connection", clientSock);
-			}
-
+			startFileSharing();
 			shutDown("Client has quit", clientSock);
 		}
 		catch(Exception e)
 		{
-			e.printStackTrace();
+			// e.printStackTrace();
 			shutDown("Error occured: Closing connection with client " + port, clientSock);
 		}
 	}
@@ -84,7 +69,6 @@ public class CommThread extends Thread
 	private SecretKey negotiateKey(InputStream inStream, OutputStream outStream) throws Exception
 	{
 		ObjectInputStream inObj = new ObjectInputStream(inStream);
-		// commStr÷eam
 		// get the p and g prime parameters
 		int size = (int)inObj.readObject();
 		BigInteger[] pg = (BigInteger[])inObj.readObject();
@@ -114,7 +98,7 @@ public class CommThread extends Thread
 		return dh.getShared();
 	}
 
-	private static boolean validateLogin() throws Exception
+	private boolean validateLogin() throws Exception
 	{
 		// send login prompt
 		String prompt = "Please enter your username";
@@ -125,8 +109,8 @@ public class CommThread extends Thread
 		b = commStream.receiveBytes();
 		b = tea.teaDecrypt(b, sharedKey.getEncoded());
 		String usr = new String(b, "UTF-8");
-		usr.trim();
-		System.out.println("Client " + port + " username: " + usr);
+		System.out.println(port + " username: " + usr);
+		port = "["+usr+"]";
 
 		// send pw prompt
 		prompt = "Please enter your password";
@@ -136,28 +120,39 @@ public class CommThread extends Thread
 		// get pw
 		b = commStream.receiveBytes();
 		b = tea.teaDecrypt(b, sharedKey.getEncoded());
-		System.out.println("Client " + port + " password is received " + new String(b, "UTF-8"));
+		System.out.println(port + " password is received");
 
-		return findInShadow(usr, new String(b, "UTF-8"));
+		return findInShadow(usr.trim(), new String(b, "UTF-8"));
 	}
 
-	/**
-	 * [findInShadow description]
-	 * @param  usr       [description]
-	 * @param  pw        [Encrypted password!]
-	 * @return           [description]
-	 * @throws Exception [description]
-	 */
-	private static boolean findInShadow(String usr, String pw) throws Exception
+	private boolean findInShadow(String usr, String pw) throws Exception
 	{
 		FileIo fio = new FileIo();
 
 		byte[] shadow = fio.getShadowPw(usr);
+		if(shadow == null)
+			return false;
+
 		shadow = tea.teaDecrypt(shadow, pwKey.getEncoded());
 		String shadowPw = new String(shadow, "UTF-8");
 
 		// System.out.println("shad: " + shadowPw + ", pw: " + pw);
 		return shadowPw.equals(pw);
+	}
+
+	private void startFileSharing() throws Exception
+	{
+		String fname = "";
+		while(!fname.equals("finished"))
+		{
+			byte[] msg = commStream.receiveBytes();
+			msg = tea.teaDecrypt(msg, sharedKey.getEncoded());
+			
+			fname = new String(msg, "UTF-8");
+			System.out.println(port + ": " + fname);
+		}
+
+		System.out.println("Client has finished all requests");
 	}
 
 	private void shutDown(String msg, Socket sock)

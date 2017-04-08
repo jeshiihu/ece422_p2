@@ -34,10 +34,12 @@ public class Server
 
            	Socket clientSock = sock.accept();
             clientPort = clientSock.getPort();
-            System.err.println("Accepted connection from client " + Integer.toString(clientPort));
-            CommThread comm = new CommThread(sock, clientSock, pwKey);
+            System.err.println("Accepted connection from " + Integer.toString(clientPort));
+            CommThread comm = new CommThread(clientSock, pwKey);
             comm.start();
 		}
+
+		// sock.close();
 	}
 
 	private static SecretKey encryptShadowTxt() throws Exception
@@ -72,8 +74,6 @@ public class Server
 			String pw = userPw[1].replaceAll("(\\s||\\n)", "");
 			byte[] pwBytes = pw.getBytes("UTF-8");
 			byte[] encryptedPw = tea.teaEncrypt(pwBytes, key.getEncoded());
-			byte[] decrpted = tea.teaDecrypt(encryptedPw, key.getEncoded());
-			System.out.println("de: " + new String(decrpted, "UTF-8"));
 
 			String user = userPw[0] + " ";
 			byte[] userBytes = user.getBytes("UTF-8");
