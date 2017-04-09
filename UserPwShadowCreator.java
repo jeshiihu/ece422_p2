@@ -1,3 +1,6 @@
+/**
+ * Program to generate a shadow pw file
+ */
 import helper.FileIo;
 import java.security.MessageDigest;
 import java.io.*;
@@ -13,14 +16,13 @@ public class UserPwShadowCreator
 		try
 		{
 			MessageDigest md = MessageDigest.getInstance("SHA-1");
-
 			if(args.length == 1 && args[0].equals("manual"))
 				manualMode(md, fio);
 			else
 			{
 				BufferedReader buf = new BufferedReader(new FileReader("unhashed.txt"));
 				
-				String line = "";
+				String line = ""; // read in unhashed file and parse
 				while((line = buf.readLine()) != null)
 				{
 					String[] userPw = line.split(" ");

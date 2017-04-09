@@ -114,19 +114,11 @@ public class Client {
 		// send public key
 		DHCrypt dh = new DHCrypt(pg[0],pg[1],size);
 		PublicKey pubKey = dh.getPublic();
-
-    	DataOutputStream out = new DataOutputStream(outStream);
 		byte[] pubKeyBytes = pubKey.getEncoded();
-		out.writeInt(pubKeyBytes.length);
-		out.write(pubKeyBytes);
+		commStream.sendBytes(pubKeyBytes);
 
 		// receive server's public key
-		DataInputStream in = new DataInputStream(inStream);
-		int len = in.readInt();
-		if(len <= 0)
-			throw new Exception("Failed to get Server's key");
-		byte[] servKey = new byte[len];
-		in.readFully(servKey, 0, len);
+		byte[] servKey = commStream.receiveBytes();
 		
 		// generate the shared key		
 		dh.setOtherKey(servKey);
@@ -193,7 +185,7 @@ public class Client {
 				msg = tea.teaDecrypt(msg, sharedKey.getEncoded());
 
 				FileIo fio = new FileIo();
-				if(!fio.createDir(username))
+				if(!fio.createDir(username)) // creates a dir with the username
 					throw new Exception("Failed to create user directory");
 
 				if(!fio.createOutputFile(username + "/" + fname))

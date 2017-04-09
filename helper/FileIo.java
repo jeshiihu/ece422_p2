@@ -118,7 +118,6 @@ public class FileIo
 	private List<byte[]> splitBytesBy(byte[] data, String delim) throws Exception
 	{
 		List<byte[]> list = new ArrayList<byte[]>();
-
 		// figure out the delim in bytes
 		byte[] bDelim = delim.getBytes("UTF-8");
 		int delimLen = bDelim.length;

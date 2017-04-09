@@ -38,8 +38,7 @@ public class CommThread extends Thread
 
 		try
 		{
-    		sharedKey = negotiateKey(clientSock.getInputStream(), clientSock.getOutputStream());
-
+    		sharedKey = negotiateKey(clientSock.getInputStream());
     		if(!validateLogin())
     		{
     			System.out.println(port + " login failed");
@@ -62,12 +61,11 @@ public class CommThread extends Thread
 		}
 		catch(Exception e)
 		{
-			// e.printStackTrace();
 			shutDown("Error occured: Closing connection with client " + port, clientSock);
 		}
 	}
 
-	private SecretKey negotiateKey(InputStream inStream, OutputStream outStream) throws Exception
+	private SecretKey negotiateKey(InputStream inStream) throws Exception
 	{
 		ObjectInputStream inObj = new ObjectInputStream(inStream);
 		// get the p and g prime parameters
@@ -75,22 +73,13 @@ public class CommThread extends Thread
 		BigInteger[] pg = (BigInteger[])inObj.readObject();
 		
 		// receive client's public key
-		DataInputStream in = new DataInputStream(inStream);
-		int len = in.readInt();
-		if(len <= 0)
-			throw new Exception("Failed to get Server's key");
-
-		byte[] cliKey = new byte[len];
-		in.readFully(cliKey, 0, len);
+		byte[] cliKey = commStream.receiveBytes();
 
 		// send public key
 		DHCrypt dh = new DHCrypt(pg[0],pg[1],size);
 		PublicKey pubKey = dh.getPublic();
-
-    	DataOutputStream out = new DataOutputStream(outStream);
 		byte[] pubKeyBytes = pubKey.getEncoded();
-		out.writeInt(pubKeyBytes.length);
-		out.write(pubKeyBytes);
+		commStream.sendBytes(pubKeyBytes);
 		
 		// generate the shared key		
 		dh.setOtherKey(cliKey);
