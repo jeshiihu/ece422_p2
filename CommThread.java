@@ -57,11 +57,11 @@ public class CommThread extends Thread
 			commStream.sendBytes(b);
 
 			startFileSharing();
-			shutDown("Client has quit", clientSock);
+			shutDown(port + " has quit", clientSock);
 		}
 		catch(Exception e)
 		{
-			shutDown("Error occured: Closing connection with client " + port, clientSock);
+			shutDown("Error occured: Closing connection with " + port, clientSock);
 		}
 	}
 
@@ -163,7 +163,7 @@ public class CommThread extends Thread
 			}
 		}
 
-		System.out.println("Client has finished all requests");
+		System.out.println(port + " has finished all requests");
 	}
 
 	private void shutDown(String msg, Socket sock)
