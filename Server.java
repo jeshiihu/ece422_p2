@@ -13,21 +13,19 @@ import java.nio.file.*;
 
 public class Server
 {
-	static private String hostname;
 	static private int port;
 
 	public static void main(String[] args)
 	{
-		if(args.length != 2)
+		if(args.length != 1)
 		{
-			System.err.println("Error: invalid arguements {hostname} {port}");
+			System.err.println("Error: invalid arguements {port}");
 			return;
 		}
 
-		hostname = args[0];
 		try
 		{
-			port = Integer.parseInt(args[1]);
+			port = Integer.parseInt(args[0]);
 		}
 		catch(NumberFormatException e)
 		{
