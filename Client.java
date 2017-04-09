@@ -41,7 +41,6 @@ public class Client {
 			return;
 		}
 
-
 		System.loadLibrary("tea");
 		Socket sock = startConnection();
 		try
