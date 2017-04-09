@@ -5,7 +5,6 @@ package helper;
 
 import java.io.*;
 import java.util.regex.*;
-import java.util.*;
 import java.nio.file.*;
 
 public class FileIo
@@ -86,69 +85,5 @@ public class FileIo
 		}
 
 		return null;
-	}
-
-	public byte[] getShadowPw(String usr)	
-	{
-		String line = "";
-		try
-		{
-			byte[] data = readFile("shadow.txt");
-			List<byte[]> byteLines = splitBytesBy(data, "\n");
-
-			for(byte[] b : byteLines)
-			{
-				List<byte[]> userPw = splitBytesBy(b, " ");
-				if(userPw.size() == 0)
-					continue;
-
-				String username = new String(userPw.get(0), "UTF-8");
-				if(username.trim().equals(usr.trim()))
-					return userPw.get(1);
-			}
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-
-		return null;
-	}
-
-	private List<byte[]> splitBytesBy(byte[] data, String delim) throws Exception
-	{
-		List<byte[]> list = new ArrayList<byte[]>();
-		// figure out the delim in bytes
-		byte[] bDelim = delim.getBytes("UTF-8");
-		int delimLen = bDelim.length;
-
-		int start = 0;
-
-		for(int i = 0; i < data.length; i++)
-		{
-			// make sure we don't go over
-			if((i+delimLen) <= data.length) 
-			{
-				byte[] check = Arrays.copyOfRange(data, i, i+delimLen);
-				boolean matches = true;
-				for(int j = 0; j < delimLen; j++)
-				{
-					if(check[j] != bDelim[j])
-						matches = false;
-				}
-
-				if(matches)
-				{
-					list.add(Arrays.copyOfRange(data, start, i));
-					start = i+delimLen;
-				}
-			}
-		}
-
-		// get the last one!
-		if(start < data.length)
-			list.add(Arrays.copyOfRange(data, start, data.length));
-
-		return list;
 	}
 }

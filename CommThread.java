@@ -117,9 +117,7 @@ public class CommThread extends Thread
 
 	private boolean findInShadow(String usr, String pw) throws Exception
 	{
-		FileIo fio = new FileIo();
-
-		byte[] shadow = fio.getShadowPw(usr);
+		byte[] shadow = UserPwShadowCreator.getShadowPw(usr);
 		if(shadow == null)
 			return false;
 

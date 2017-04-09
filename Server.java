@@ -16,7 +16,7 @@ public class Server
 	static private String hostname;
 	static private int port;
 
-	public static void main(String[] args) throws Exception
+	public static void main(String[] args)
 	{
 		if(args.length != 2)
 		{
@@ -35,27 +35,22 @@ public class Server
 			return;
 		}
 
-		ServerSocket sock = startConnection();
-		if(sock == null)
+		try
 		{
-			System.err.println("Error: Server failed to connect to port " + Integer.toString(port));
-			return;
+			ServerSocket sock = startConnection();
+			if(sock == null)
+			{
+				System.err.println("Error: Server failed to connect to port " + Integer.toString(port));
+				return;
+			}
+
+			System.out.println("Server successfully connected!");
+			beginListening(sock);
 		}
-
-		System.out.println("Server successfully connected!");
-
-		while(true)
+		catch(Exception e)
 		{
-			// a "blocking" call which waits until a connection is requested
-			int clientPort;
-
-           	Socket clientSock = sock.accept();
-            clientPort = clientSock.getPort();
-            System.err.println("Accepted connection from " + Integer.toString(clientPort));
-            CommThread comm = new CommThread(clientSock);
-            comm.start();
+			System.err.println("Error: unable to make socket connection");
 		}
-
 		// sock.close();
 	}
 
@@ -65,5 +60,19 @@ public class Server
 		sock = new ServerSocket(port);
 
 		return sock;
+	}
+
+	private static void beginListening(ServerSocket sock) throws Exception
+	{
+		while(true)
+		{
+			// a "blocking" call which waits until a connection is requested
+			int clientPort;
+			Socket clientSock = sock.accept();
+			clientPort = clientSock.getPort();
+			System.err.println("Accepted connection from " + Integer.toString(clientPort));
+			CommThread comm = new CommThread(clientSock);
+			comm.start();
+		}
 	}
 }
