@@ -25,6 +25,17 @@ public class FileIo
 		return f.exists() && !f.isDirectory();
 	}
 
+	public boolean createDir(String dir)
+	{
+		File dirF = new File(dir);
+		if (dirF.exists()) 
+		{
+			return true;
+		}
+
+		return dirF.mkdir();
+	}
+
 	public boolean createOutputFile(String fname)
 	{
 		File f = new File(fname);

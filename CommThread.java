@@ -21,16 +21,13 @@ public class CommThread extends Thread
 	private String port;
 
 	private SecretKey sharedKey;
-	private SecretKey pwKey;
 
 	private CommStream commStream;
 	private TEAEncryption tea = new TEAEncryption();
 
-	public CommThread(Socket cSock, SecretKey passKey) throws Exception
+	public CommThread(Socket cSock) throws Exception
 	{
 		clientSock = cSock;
-		pwKey = passKey;
-
 		commStream = new CommStream(cSock);
 		port = "[" + Integer.toString(clientSock.getPort()) + "]";
 	}
@@ -137,11 +134,12 @@ public class CommThread extends Thread
 		if(shadow == null)
 			return false;
 
-		shadow = tea.teaDecrypt(shadow, pwKey.getEncoded());
 		String shadowPw = new String(shadow, "UTF-8");
 
-		// System.out.println("shad: " + shadowPw + ", pw: " + pw);
-		return shadowPw.equals(pw);
+		MessageDigest md = MessageDigest.getInstance("SHA-1");
+		String encryptedPw = UserPwShadowCreator.encrypt(pw, md);
+
+		return shadowPw.equals(encryptedPw);
 	}
 
 	private void startFileSharing() throws Exception

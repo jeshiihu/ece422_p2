@@ -14,17 +14,36 @@ import java.io.Console;
 import java.nio.file.*;
 
 public class Client {
-	static private String hostname = "127.0.0.1";
-	static private int port = 16000;
+	static private String hostname;
+	static private int port;
 	static private SecretKey sharedKey;
 	static private TEAEncryption tea = new TEAEncryption();
 	static private CommStream commStream;
 
+	static private String username;
+
 	public static void main(String[] args) throws Exception
 	{
+		if(args.length != 2)
+		{
+			System.err.println("Error: invalid arguements {hostname} {port}");
+			return;
+		}
+
+		hostname = args[0];
+		try
+		{
+			port = Integer.parseInt(args[1]);
+		}
+		catch(NumberFormatException e)
+		{
+			System.err.println("Port needs to be a valid integer value");
+			return;
+		}
+
+
 		System.loadLibrary("tea");
 		Socket sock = startConnection();
-
 		try
 		{
 			if(sock == null)
@@ -52,7 +71,6 @@ public class Client {
 		}
 		catch(Exception e)
 		{
-			// e.printStackTrace();
 			System.err.println("Error: Client is quitting");
 		}
 
@@ -66,11 +84,11 @@ public class Client {
 		{
 			InetAddress host = InetAddress.getByName(hostname);
 			sock = new Socket(host, port);
-        	System.err.println("Connected to " + host + " on port " + port);
+        	System.out.println("Connected to " + hostname + " on port " + port);
 		}
 		catch(Exception e)
 		{
-			e.printStackTrace();
+			System.err.println("Failed to connect to " + hostname + " on port " + port);
 		}
 
 		return sock;
@@ -125,6 +143,8 @@ public class Client {
 
 		// send username
 		b = commStream.getUserInput(new String(b,"UTF-8"), false);
+		username = new String(b,"UTF-8");
+
 		b = tea.teaEncrypt(b, sharedKey.getEncoded());
 		commStream.sendBytes(b);
 
@@ -173,8 +193,13 @@ public class Client {
 				msg = tea.teaDecrypt(msg, sharedKey.getEncoded());
 
 				FileIo fio = new FileIo();
-				fio.createOutputFile("clientFiles/" + fname);
-				Files.write(Paths.get("clientFiles/" + fname), msg);
+				if(!fio.createDir(username))
+					throw new Exception("Failed to create user directory");
+
+				if(!fio.createOutputFile(username + "/" + fname))
+					throw new Exception("Failed to create file");
+
+				Files.write(Paths.get(username + "/" + fname), msg);
 				System.out.println("File has been created\n");
 			}
 		}
