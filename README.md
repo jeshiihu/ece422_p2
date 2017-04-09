@@ -12,18 +12,29 @@ On the terminal compile the source code. Please ensure you use the correct gcc l
 ```
 Please ensure that the environment variable JAVA_HOME has been properly set!
 # Running the Programs
-Prior to this, ensure that you have the following files/directories (should be included if you cloned this repo)
-* unhashed.txt: text file containing the unhashed usernames and passwords
-* clientFiles/: folder where the client will store the requested files from the server
-* serverFiles/: folder where server searches for the file being requested
-
+User Password Shadow Creator
+---
+This program has two modes:
+* Default Mode: that requires a file called "unhashed.txt" to exist and contain usernames and their passwords in the form
+	user1 pw1<br>
+ 	user2 pw2
+```bash
+java UserPwShadowCreator
+```
+* Manual Mode: creates a shadow file with user input from the terminal
+```bash
+java UserPwShadowCreator manual
+```
 Server
 ---
+Prior to running the Server program, ensure that you have the following directory (should be included if you cloned this repo)
+* serverFiles/: folder where server searches for the file being requested (contains files to copy from)
 ```bash
-java Server {hostname} {port}
+java Server {port}
 ```
 Client
 ---
+Once you login successfully, you can begin to retrieve files from the server. At any time after this point, you may enter "finished" to complete exhange and exit. All files that have been received are placed in a directory with your username as its name.
 ```bash
 java Client {hostname} {port}
 ```
