@@ -117,7 +117,8 @@ public class UserPwShadowCreator
 	{
 		SecureRandom random = new SecureRandom();
 		byte[] rand = random.generateSeed(8);
-		return new String(rand, "UTF-8");
+
+		return bytesToHex(rand);
 	}
 
 	// http://www.herongyang.com/Cryptography/SHA1-Message-Digest-in-Java.html
