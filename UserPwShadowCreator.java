@@ -5,28 +5,37 @@ import helper.FileIo;
 import java.security.MessageDigest;
 import java.io.*;
 import java.util.*;
+import java.security.SecureRandom;
 
 public class UserPwShadowCreator 
 {
 	public static void main(String[] args) 
 	{
-		FileIo fio = new FileIo();
-		fio.createOutputFile("shadow.txt");
-
 		try
 		{
 			MessageDigest md = MessageDigest.getInstance("SHA-1");
-			if(args.length == 1 && args[0].equals("manual"))
+			FileIo fio = new FileIo();
+
+			if(!fio.fileExists("shadow.txt"))
+				fio.createOutputFile("shadow.txt");
+
+			if(args.length == 1 && args[0].equals("add"))
 				manualMode(md);
 			else
 			{
+				System.out.println("Please note this will delete the original shadow.txt and make a new one.");
+				fio.createOutputFile("shadow.txt");
+
 				BufferedReader buf = new BufferedReader(new FileReader("unhashed.txt"));
 				
 				String line = ""; // read in unhashed file and parse
 				while((line = buf.readLine()) != null)
 				{
 					String[] userPw = line.split(" ");
-					String hashed = userPw[0] + " " + encrypt(userPw[1], md);
+					String salt = generateSalt();
+					userPw[1] += salt;
+					
+					String hashed = userPw[0] + " " + salt + " " + encrypt(userPw[1], md);
 					fio.addNewLine("shadow.txt", hashed);
 				}
 			}
@@ -43,19 +52,32 @@ public class UserPwShadowCreator
 		return bytesToHex(md.digest());
 	}
 
-	// http://www.herongyang.com/Cryptography/SHA1-Message-Digest-in-Java.html
-	// used to compare properly!
-	private static String bytesToHex(byte[] b) 
+	public static String getShadowSalt(String usr)
 	{
-		char hexDigit[] = {'0', '1', '2', '3', '4', '5', '6', '7','8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-		StringBuffer buf = new StringBuffer();
-		for (int j=0; j<b.length; j++) 
+		FileIo fio = new FileIo();
+		String line = "";
+		try
 		{
-			buf.append(hexDigit[(b[j] >> 4) & 0x0f]);
-			buf.append(hexDigit[b[j] & 0x0f]);
+			byte[] data = fio.readFile("shadow.txt");
+			List<byte[]> byteLines = splitBytesBy(data, "\n");
+
+			for(byte[] b : byteLines)
+			{
+				List<byte[]> userPw = splitBytesBy(b, " ");
+				if(userPw.size() == 0)
+					continue;
+
+				String username = new String(userPw.get(0), "UTF-8");
+				if(username.trim().equals(usr.trim()))
+					return new String(userPw.get(1), "UTF-8");
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
 		}
 
-		return buf.toString();
+		return null;
 	}
 
 	public static byte[] getShadowPw(String usr)	
@@ -75,7 +97,7 @@ public class UserPwShadowCreator
 
 				String username = new String(userPw.get(0), "UTF-8");
 				if(username.trim().equals(usr.trim()))
-					return userPw.get(1);
+					return userPw.get(2);
 			}
 		}
 		catch(Exception e)
@@ -84,6 +106,28 @@ public class UserPwShadowCreator
 		}
 
 		return null;
+	}
+
+	private static String generateSalt() throws Exception
+	{
+		SecureRandom random = new SecureRandom();
+		byte[] rand = random.generateSeed(8);
+		return new String(rand, "UTF-8");
+	}
+
+	// http://www.herongyang.com/Cryptography/SHA1-Message-Digest-in-Java.html
+	// used to compare properly!
+	private static String bytesToHex(byte[] b) 
+	{
+		char hexDigit[] = {'0', '1', '2', '3', '4', '5', '6', '7','8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+		StringBuffer buf = new StringBuffer();
+		for (int j=0; j<b.length; j++) 
+		{
+			buf.append(hexDigit[(b[j] >> 4) & 0x0f]);
+			buf.append(hexDigit[b[j] & 0x0f]);
+		}
+
+		return buf.toString();
 	}
 
 	private static List<byte[]> splitBytesBy(byte[] data, String delim) throws Exception

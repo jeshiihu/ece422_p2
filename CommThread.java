@@ -123,9 +123,15 @@ public class CommThread extends Thread
 
 		String shadowPw = new String(shadow, "UTF-8");
 
+
 		MessageDigest md = MessageDigest.getInstance("SHA-1");
+
+		String salt = UserPwShadowCreator.getShadowSalt(usr);
+		System.out.println("Salt: " + salt);
+		pw += salt;
 		String encryptedPw = UserPwShadowCreator.encrypt(pw, md);
 
+		System.out.println("shadow: " + shadow + " encrypted: " + encryptedPw);
 		return shadowPw.equals(encryptedPw);
 	}
 
