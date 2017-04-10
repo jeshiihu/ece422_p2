@@ -2,10 +2,11 @@
  * Program to generate a shadow pw file
  */
 import helper.FileIo;
-import java.security.MessageDigest;
+
 import java.io.*;
 import java.util.*;
 import java.security.SecureRandom;
+import java.security.MessageDigest;
 
 public class UserPwShadowCreator 
 {
@@ -13,20 +14,24 @@ public class UserPwShadowCreator
 	{
 		try
 		{
-			MessageDigest md = MessageDigest.getInstance("SHA-1");
-			FileIo fio = new FileIo();
+			System.out.println("Please choose one of the following options.");
+			System.out.println("  [0] Create a new shadow file from unhashed.txt");
+			System.out.println("  [1] Create a new shadow file and manually add users");
+			System.out.println("  [2] Add users from unhashed.txt to existing shadow.txt");
+			System.out.println("  [3] Add users, manually, to existing shadow.txt");
 
-			if(!fio.fileExists("shadow.txt"))
+			Console con = System.console();
+			String input = con.readLine("Choice: ");
+
+			FileIo fio = new FileIo();
+			if(input.equals("0") || input.equals("1"))
 				fio.createOutputFile("shadow.txt");
 
-			if(args.length == 1 && args[0].equals("addmanual"))
+			MessageDigest md = MessageDigest.getInstance("SHA-1");
+			if(input.equals("1") || input.equals("3"))
 				manualMode(md);
 			else
 			{
-				System.out.println("Please note this will delete the original shadow.txt and make a new one.");
-				if(args.length == 0 || args[1].equals("addfile"))
-					fio.createOutputFile("shadow.txt");
-
 				BufferedReader buf = new BufferedReader(new FileReader("unhashed.txt"));
 				String line = ""; // read in unhashed file and parse
 				while((line = buf.readLine()) != null)
