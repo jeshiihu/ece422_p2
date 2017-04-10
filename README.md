@@ -14,14 +14,17 @@ Please ensure that the environment variable JAVA_HOME has been properly set!
 # Running the Programs
 User Password Shadow Creator
 ---
+If no shadow.txt file is found both modes will, by default create one for the user.
+
 This program has two modes:
 * Default Mode: that requires a file called "unhashed.txt" to exist and contain usernames and their passwords in the form
 	user1 pw1<br>
  	user2 pw2
+Please Note: this will delete and recreate any previous shadow.txt files.
 ```bash
 java UserPwShadowCreator
 ```
-* Manual Mode: creates a shadow file with user input from the terminal
+* Add Mode: adds to an existing shadow.txt file manually
 ```bash
 java UserPwShadowCreator manual
 ```

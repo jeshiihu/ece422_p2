@@ -19,15 +19,15 @@ public class UserPwShadowCreator
 			if(!fio.fileExists("shadow.txt"))
 				fio.createOutputFile("shadow.txt");
 
-			if(args.length == 1 && args[0].equals("add"))
+			if(args.length == 1 && args[0].equals("addmanual"))
 				manualMode(md);
 			else
 			{
 				System.out.println("Please note this will delete the original shadow.txt and make a new one.");
-				fio.createOutputFile("shadow.txt");
+				if(args.length == 0 || args[1].equals("addfile"))
+					fio.createOutputFile("shadow.txt");
 
 				BufferedReader buf = new BufferedReader(new FileReader("unhashed.txt"));
-				
 				String line = ""; // read in unhashed file and parse
 				while((line = buf.readLine()) != null)
 				{
@@ -187,7 +187,10 @@ public class UserPwShadowCreator
 			if(pw.equals(":quit"))
 				break;
 
-			String hashed = username + " " + encrypt(pw, md);
+			String salt = generateSalt();
+			pw += salt;
+			
+			String hashed = username + " " + salt + " " + encrypt(pw, md);
 			fio.addNewLine("shadow.txt", hashed);
 		}
 	}
