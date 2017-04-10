@@ -38,21 +38,21 @@ public class CommThread extends Thread
 
 		try
 		{
-    		sharedKey = negotiateKey(clientSock.getInputStream());
-    		if(!validateLogin())
-    		{
-    			System.out.println(port + " login failed");
-    			
-    			String prompt = "access-denied";
+			sharedKey = negotiateKey(clientSock.getInputStream());
+			if(!validateLogin())
+			{
+				System.out.println(port + " login failed");
+
+				String prompt = "access-denied";
 				byte[] b = tea.teaEncrypt(prompt.getBytes("UTF-8"), sharedKey.getEncoded());
 				commStream.sendBytes(b);
 
 				return;
-    		}
+			}
 
-   			System.out.println(port + " login successful! Ready to receive file requests\n");
+			System.out.println(port + " login successful! Ready to receive file requests\n");
 
-    		String prompt = "access-granted";
+			String prompt = "access-granted";
 			byte[] b = tea.teaEncrypt(prompt.getBytes("UTF-8"), sharedKey.getEncoded());
 			commStream.sendBytes(b);
 
@@ -126,12 +126,9 @@ public class CommThread extends Thread
 
 		MessageDigest md = MessageDigest.getInstance("SHA-1");
 
-		String salt = UserPwShadowCreator.getShadowSalt(usr);
-		System.out.println("Salt: " + salt);
-		pw += salt;
+		pw += UserPwShadowCreator.getShadowSalt(usr);
 		String encryptedPw = UserPwShadowCreator.encrypt(pw, md);
 
-		System.out.println("shadow: " + shadow + " encrypted: " + encryptedPw);
 		return shadowPw.equals(encryptedPw);
 	}
 

@@ -34,8 +34,8 @@ public class DHCrypt
 	public void setOtherKey(byte[] otherKeyBytes) throws Exception
 	{
 		X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherKeyBytes);
-    	KeyFactory keyFact = KeyFactory.getInstance("DH");
-    	otherPubKey = keyFact.generatePublic(x509KeySpec);
+		KeyFactory keyFact = KeyFactory.getInstance("DH");
+		otherPubKey = keyFact.generatePublic(x509KeySpec);
 	}
 
 	public void generateSharedSecret() throws Exception
@@ -44,11 +44,11 @@ public class DHCrypt
 			throw new Exception("Error: other key has not been set");
 
 		KeyAgreement ka = KeyAgreement.getInstance("DH");
-    	ka.init(privKey);
-    	ka.doPhase(otherPubKey, true);
-    	sharedSecret = ka.generateSecret("AES");
-    	if(sharedSecret == null)
-    		throw new Exception("Unable to generate secret key");
+		ka.init(privKey);
+		ka.doPhase(otherPubKey, true);
+		sharedSecret = ka.generateSecret("AES");
+		if(sharedSecret == null)
+			throw new Exception("Unable to generate secret key");
 
 		System.out.println("Generated shared key successfully!\n");
 	}

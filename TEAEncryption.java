@@ -43,7 +43,7 @@ public class TEAEncryption
 		if(nearest <= mult)
 			nearest = mult*2;
 		
-    	return nearest;
+		return nearest;
 	}
 
 	private int[] bytesToInts(byte[] bytes)
@@ -52,28 +52,28 @@ public class TEAEncryption
 		// https://docs.oracle.com/javase/7/docs/api/java/nio/ByteBuffer.html
 		int bytesLen = bytes.length;
 		int mult = roundUpClosestMult(4, bytesLen);
-        int[] ints = new int[mult/4];
+		int[] ints = new int[mult/4];
 
 		ByteBuffer bBuf = ByteBuffer.allocate(mult);
 
 		byte[] paddedBuffer = new byte[mult];
- 		
- 		for(int i = 0; i<mult; i++)
- 		{
- 			int diff = mult-bytesLen;
- 			if(i < diff)
- 				paddedBuffer[i] = (byte)0;
- 			else
- 				paddedBuffer[i] = bytes[i-diff];
- 		}
 
- 		bBuf.put(paddedBuffer);
- 		bBuf.order(ByteOrder.BIG_ENDIAN);
-        bBuf.flip();
+		for(int i = 0; i<mult; i++)
+		{
+			int diff = mult-bytesLen;
+			if(i < diff)
+				paddedBuffer[i] = (byte)0;
+			else
+				paddedBuffer[i] = bytes[i-diff];
+		}
 
-        // process all
-        while (bBuf.remaining() > 0)
-            ints[bBuf.position()/4] = bBuf.getInt();
+		bBuf.put(paddedBuffer);
+		bBuf.order(ByteOrder.BIG_ENDIAN);
+		bBuf.flip();
+
+		// process all
+		while (bBuf.remaining() > 0)
+			ints[bBuf.position()/4] = bBuf.getInt();
 
 		return removePadding(ints);
 	}
@@ -116,9 +116,7 @@ public class TEAEncryption
 	{
 		ByteBuffer buffer = ByteBuffer.allocate(ints.length*4);
 		for(int i=0;i<ints.length;i++)
-		{	
-    		buffer.putInt(ints[i]);
-		}
+			buffer.putInt(ints[i]);
 
 		return buffer.array();
 	}
