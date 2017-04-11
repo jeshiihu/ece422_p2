@@ -1,5 +1,10 @@
 /**
  * Program to generate a shadow pw file
+ *
+ * The code encrypts the password in with a one way SHA-1 encryption
+ * - Message Digest Java Class
+ * - 8 bytes SecureRandom Java Class
+ * - salt is encrpted and stored with the file
  */
 import helper.FileIo;
 

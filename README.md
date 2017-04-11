@@ -5,6 +5,8 @@ This project introduces the idea of security with encryption. The main encryptio
 
 The client and server agree upon a shared secret key (obtained using Diffie-Hellman, DH) and then the client logs in with their username and password. Once this is valid, encrypted files are transfered from the server to the client.
 
+For each user and password, it is encrypted and tested against using SHA-1.
+
 # Compiling the Program
 On the terminal compile the source code. Please ensure you use the correct gcc line in the Makefile for either Linux machines or Mac OSX machines. The targets can be left blank (default linux target) or one of the following: clean, mac, or linux
 ```bash
